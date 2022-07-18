@@ -1,13 +1,16 @@
 export type LogLevel = 'FATAL' | 'ERROR' | 'WARNING' | 'QUERY' | 'INFO' | 'DEBUG' | 'TRACE'
 
+export interface NamedTransports {
+  [name: string]: TransportInterface
+}
 export interface LoggerOptions {
   level?: LogLevel | LogLevel[]
-  category?: string
   silence?: boolean
-  transport?: TransportInterface | TransportInterface[]
+  transports?: NamedTransports
 }
 
 export interface PartialLogEntry {
+  category?: string
   error?: Error
   environment?: string
   measurement?: number | string
@@ -22,10 +25,9 @@ export interface LogEntry extends PartialLogEntry {
 }
 
 export interface TransportLogEntry extends LogEntry {
-  environment?: string
+  environment: string
   timestamp: Date
   index: number
-  category?: string
 }
 
 export interface TransportInterface {

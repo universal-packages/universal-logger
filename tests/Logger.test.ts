@@ -2,15 +2,15 @@ import Logger, { LogLevel } from '../src'
 
 describe('Logger', (): void => {
   it('will publish a log entry to all configured trasports transports', async (): Promise<void> => {
-    const testTransport = { log: jest.fn().mockResolvedValue(0) }
-    let logger = new Logger({ transport: testTransport })
+    const testTransport = { log: jest.fn() }
+    let logger = new Logger({ transports: { testTransport } })
 
     logger.publish('INFO', 'This is a tilte')
     expect(testTransport.log).toHaveBeenCalledTimes(1)
 
-    const testTransport2 = { log: jest.fn().mockResolvedValue(0) }
+    const testTransport2 = { log: jest.fn() }
 
-    logger = new Logger({ transport: [testTransport, testTransport2] })
+    logger = new Logger({ transports: { testTransport, testTransport2 } })
     logger.publish({ level: 'INFO', title: 'This is a tilte' })
 
     await logger.await()
@@ -20,8 +20,8 @@ describe('Logger', (): void => {
   })
 
   it('will not publish if the log is silenced', async (): Promise<void> => {
-    const testTransport = { log: jest.fn().mockResolvedValue(0) }
-    const logger = new Logger({ silence: true, transport: testTransport })
+    const testTransport = { log: jest.fn() }
+    const logger = new Logger({ silence: true, transports: { testTransport } })
 
     logger.publish({ level: 'INFO', title: 'This is a tilte' })
     expect(testTransport.log).toHaveBeenCalledTimes(0)
@@ -37,8 +37,8 @@ describe('Logger', (): void => {
 
     for (let i = 0; i < levels.length; i++) {
       const currentLevel = levels[i] as LogLevel
-      const testTransport = { log: jest.fn().mockResolvedValue(0) }
-      const logger = new Logger({ level: currentLevel, transport: testTransport })
+      const testTransport = { log: jest.fn() }
+      const logger = new Logger({ level: currentLevel, transports: { testTransport } })
 
       for (let j = 0; j < levels.length; j++) {
         const currentLogLevel = levels[j] as LogLevel
@@ -72,9 +72,70 @@ describe('Logger', (): void => {
     }
   })
 
+  it('console war if no transport is there to log the entry', async (): Promise<void> => {
+    const errorTransport = {
+      log: () => {
+        throw 'Nop'
+      }
+    }
+    const consoleLogMock = jest.fn()
+    console.warn = consoleLogMock
+    const logger = new Logger({ transports: {} })
+
+    logger.publish({ level: 'INFO', title: 'This is a tilte' })
+
+    await logger.await()
+
+    expect(consoleLogMock).toHaveBeenCalledWith('WARNING: no transports configured in logger')
+  })
+
+  it('console log if no transport successully loggged an entry', async (): Promise<void> => {
+    const errorTransport = {
+      log: () => {
+        throw 'Nop'
+      }
+    }
+    const consoleLogMock = jest.fn()
+    const originalLog = console.log
+    console.log = consoleLogMock
+    const logger = new Logger({ transports: { errorTransport } })
+
+    logger.publish({ level: 'INFO', title: 'This is a tilte' })
+
+    await logger.await()
+
+    expect(consoleLogMock).toHaveBeenCalledWith('Nop')
+
+    console.log = originalLog
+  })
+
+  it('logs the error of another transport in all other transports if one files', async (): Promise<void> => {
+    const testTransport = { log: jest.fn() }
+    const errorTransport = {
+      log: () => {
+        throw 'Nop'
+      }
+    }
+    const logger = new Logger({ transports: { errorTransport, testTransport } })
+
+    logger.publish({ level: 'INFO', title: 'This is a tilte' })
+
+    await logger.await()
+
+    expect(testTransport.log).toHaveBeenCalledWith({
+      level: 'ERROR',
+      title: `"errorTransport" could't log beacuse an error inside the trasporter itself`,
+      error: 'Nop',
+      timestamp: expect.any(Date),
+      index: 2,
+      environment: 'test',
+      category: 'logger-transports'
+    })
+  })
+
   it('will not publish if the log enrtry level is not in the level group array', async (): Promise<void> => {
-    const testTransport = { log: jest.fn().mockResolvedValue(0) }
-    const logger = new Logger({ level: ['INFO', 'FATAL'], transport: testTransport })
+    const testTransport = { log: jest.fn() }
+    const logger = new Logger({ level: ['INFO', 'FATAL'], transports: { testTransport } })
 
     logger.publish({ level: 'INFO', title: 'This is a tilte' })
     expect(testTransport.log).toHaveBeenCalledTimes(1)
@@ -90,19 +151,46 @@ describe('Logger', (): void => {
     expect(testTransport.log).toHaveBeenCalledTimes(2)
   })
 
-  it('will pass a category to the transports', async (): Promise<void> => {
-    const testTransport = { log: jest.fn().mockResolvedValue(0) }
-    const logger = new Logger({ level: ['INFO', 'FATAL'], transport: testTransport, category: 'Cat' })
+  it('will pass an environment to the transports (NODE_ENV)', async (): Promise<void> => {
+    const testTransport = { log: jest.fn() }
+    const logger = new Logger({ level: ['INFO', 'FATAL'], transports: { testTransport } })
 
     logger.publish({ level: 'INFO', title: 'This is a tilte' })
-    expect(testTransport.log.mock.calls[0][0]).toMatchObject({ category: 'Cat' })
+    expect(testTransport.log.mock.calls[0][0]).toMatchObject({ environment: 'test' })
   })
 
-  it('will pass an environment to the transports (NODE_ENV)', async (): Promise<void> => {
-    const testTransport = { log: jest.fn().mockResolvedValue(0) }
-    const logger = new Logger({ level: ['INFO', 'FATAL'], transport: testTransport, category: 'Cat' })
+  it('can set transports on the fly', async (): Promise<void> => {
+    const testTransport = { log: jest.fn() }
+    const newTransport = { log: jest.fn() }
+    let logger = new Logger({ transports: { testTransport } })
+
+    logger.addTransport('testTransport', testTransport)
+
+    await logger.await()
+
+    expect(testTransport.log).toHaveBeenCalledWith({
+      environment: 'test',
+      index: 1,
+      level: 'WARNING',
+      message: undefined,
+      timestamp: expect.any(Date),
+      title: 'One "testTransport" transport was already set in transports'
+    })
+
+    logger.addTransport('newTransport', newTransport)
 
     logger.publish({ level: 'INFO', title: 'This is a tilte' })
-    expect(testTransport.log.mock.calls[0][0]).toMatchObject({ category: 'Cat', environment: 'test' })
+
+    await logger.await()
+
+    expect(testTransport.log).toHaveBeenCalledTimes(2)
+    expect(newTransport.log).toHaveBeenCalledTimes(1)
+  })
+
+  it('can get transports by name', async (): Promise<void> => {
+    const testTransport = { log: jest.fn() }
+    let logger = new Logger({ transports: { testTransport } })
+
+    expect(logger.getTransport('testTransport')).toEqual(testTransport)
   })
 })

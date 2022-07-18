@@ -24,7 +24,7 @@ export default class LocalFileTransport implements TransportInterface {
     } else {
       const categoryTag = logEntry.category ? `${` | ${logEntry.category}`}` : ''
       const measurementTag = logEntry.measurement ? ` | ${logEntry.measurement}` : ''
-      const timestamTag = logEntry.timestamp ? ` | ${logEntry.timestamp.toLocaleTimeString()} ` : ''
+      const timestamTag = ` | ${logEntry.timestamp.toLocaleTimeString()} `
 
       let toAppend = `${this.pad(logEntry.index)} | ${logEntry.level}${categoryTag}${measurementTag}${timestamTag}\n`
 

@@ -1,8 +1,9 @@
 import chalk from 'chalk'
 import util from 'util'
 import ansiEscapes from 'ansi-escapes'
+import stripAnsi from 'strip-ansi'
 import { TransportLogEntry, LogLevel, TransportInterface } from './Logger.types'
-import { TerminalTransportOptions, CategoryColor } from './TerminalTransport.types'
+import { TerminalTransportOptions, CategoryColor, NamedCategoryColors } from './TerminalTransport.types'
 
 /**
  *
@@ -11,13 +12,19 @@ import { TerminalTransportOptions, CategoryColor } from './TerminalTransport.typ
  *
  * By default it will clear the whole terminal screen and start logging.
  *
- *
  */
 export default class TerminalTransport implements TransportInterface {
   private readonly options: TerminalTransportOptions
+  private readonly categoryColors: NamedCategoryColors
 
   public constructor(options?: TerminalTransportOptions) {
     this.options = { clear: false, ...options }
+    this.categoryColors = { ...this.options.categoryColors }
+  }
+
+  /** Sets a category color for entries that include it */
+  public setCategoryColor(category: string, color: CategoryColor): void {
+    this.categoryColors[category] = color
   }
 
   /** Prints a log entry in ther terminal gracefuly */
@@ -28,10 +35,10 @@ export default class TerminalTransport implements TransportInterface {
     }
 
     const tagsFormat = chalk.bgRgb(30, 30, 30).bold.rgb(240, 240, 240)
-    const categoryTag = logEntry.category ? ` ${this.getCategoryColor(this.options.categoryColor)(` ${logEntry.category} `)}` : ''
-    const environmentTag = logEntry.environment ? ` ${tagsFormat(` ${logEntry.environment} `)}` : ''
+    const categoryTag = logEntry.category ? ` ${this.getCategoryColor(this.categoryColors[logEntry.category])(` ${logEntry.category} `)}` : ''
+    const environmentTag = ` ${tagsFormat(` ${logEntry.environment} `)}`
     const measurementTag = logEntry.measurement ? ` ${tagsFormat(` ${logEntry.measurement} `)}` : ''
-    const timestampTag = logEntry.timestamp ? ` ${tagsFormat(` ${logEntry.timestamp.toLocaleTimeString()} `)}` : ''
+    const timestampTag = ` ${tagsFormat(` ${logEntry.timestamp.toLocaleTimeString()} `)}`
 
     let toAppend = `${this.getLevelBackgroundChalk(logEntry.level)(
       ` ${this.pad(logEntry.index)} ${logEntry.level} `
@@ -145,7 +152,7 @@ export default class TerminalTransport implements TransportInterface {
   private printMetadata(metadata: Record<string, any>): string {
     const metadataString = util.inspect(metadata, { depth: 5, colors: true, compact: true })
 
-    if (metadataString.length > process.stdout.columns) {
+    if (stripAnsi(metadataString).length > process.stdout.columns || metadataString.includes('\n')) {
       let output = ''
       const lines = util.inspect(metadata, { depth: 5, colors: true, compact: false }).split('\n')
 
@@ -159,7 +166,7 @@ export default class TerminalTransport implements TransportInterface {
 
       return output
     } else {
-      return `⚑ ${metadataString}}\n`
+      return `⚑ ${metadataString}\n`
     }
   }
 }
