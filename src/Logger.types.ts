@@ -10,7 +10,6 @@ export interface LoggerOptions {
 }
 
 export interface PartialLogEntry {
-  category?: string
   error?: Error
   environment?: string
   measurement?: number | string
@@ -19,6 +18,7 @@ export interface PartialLogEntry {
 }
 
 export interface LogEntry extends PartialLogEntry {
+  category?: string
   level: LogLevel
   title?: string
   message?: string

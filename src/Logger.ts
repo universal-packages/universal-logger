@@ -46,7 +46,7 @@ export default class Logger {
     this.transportKeys = Object.keys(this.transports)
   }
 
-  public getTransport(name: string): TransportInterface {
+  public getTransport<T>(name: string): T | TransportInterface {
     return this.transports[name]
   }
 
@@ -57,9 +57,9 @@ export default class Logger {
 
   /** Sends a new log entry to the transports. */
   public publish(entry: LogEntry): void
-  public publish(level: LogLevel, title?: string, message?: string, restOfEntry?: PartialLogEntry): void
-  public publish(levelOrEntry: LogLevel | LogEntry, title?: string, message?: string, restOfEntry?: PartialLogEntry): void {
-    const finalEntry: LogEntry = typeof levelOrEntry === 'string' ? { level: levelOrEntry, title, message, ...restOfEntry } : levelOrEntry
+  public publish(level: LogLevel, title?: string, message?: string, category?: string, restOfEntry?: PartialLogEntry): void
+  public publish(levelOrEntry: LogLevel | LogEntry, title?: string, message?: string, category?: string, restOfEntry?: PartialLogEntry): void {
+    const finalEntry: LogEntry = typeof levelOrEntry === 'string' ? { category, level: levelOrEntry, title, message, ...restOfEntry } : levelOrEntry
 
     if (this.canBeLogged(finalEntry)) {
       const transportLogEntry: TransportLogEntry = {
