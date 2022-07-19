@@ -132,18 +132,22 @@ export default class TerminalTransport implements TransportInterface {
   private printError(error: Error): string {
     let output = ''
 
-    if (error.stack) {
-      const lines = error.stack.split('\n')
+    if (error instanceof Error) {
+      if (error.stack) {
+        const lines = error.stack.split('\n')
 
-      output = `${this.getLevelTextChalk('ERROR')(error.message)}\n`
-      if (error.cause) output = output + `${error.cause}}\n`
+        output = `${this.getLevelTextChalk('ERROR')(error.message)}\n`
+        if (error.cause) output = output + `${error.cause}}\n`
 
-      for (let i = 1; i < lines.length - 1; i++) {
-        output = output + `${lines[i]}\n`
+        for (let i = 1; i < lines.length - 1; i++) {
+          output = output + `${lines[i]}\n`
+        }
+      } else {
+        output = output + `${this.getLevelTextChalk('ERROR')(error.message)}\n`
+        if (error.cause) output = output + `${error.cause}}\n`
       }
     } else {
-      output = output + `${this.getLevelTextChalk('ERROR')(error.message)}\n`
-      if (error.cause) output = output + `${error.cause}}\n`
+      output = `${this.getLevelTextChalk('ERROR')(error)}\n`
     }
 
     return output

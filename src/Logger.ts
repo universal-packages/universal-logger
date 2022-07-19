@@ -38,7 +38,7 @@ export default class Logger {
     this.bufferDispatcher = new BufferDispatcher<TransportLogEntry>(this.processEntry.bind(this))
   }
 
-  /** Appends a new transport to the transports array */
+  /** Appends a new transport to the transports map */
   public addTransport(name: string, transport: TransportInterface): void {
     if (this.transports[name]) this.publish('WARNING', `One "${name}" transport was already set in transports`)
 
@@ -46,6 +46,7 @@ export default class Logger {
     this.transportKeys = Object.keys(this.transports)
   }
 
+  /** Gets a named transport  */
   public getTransport<T>(name: string): T | TransportInterface {
     return this.transports[name]
   }

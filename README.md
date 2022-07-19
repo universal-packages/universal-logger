@@ -57,6 +57,9 @@ logger.publish('<level>', '<title>', 'message', { ...rest })
 - **`error`** `Error`
   If this is an `ERROR` level log entry you can pass the error object here.
 
+- **`category`** `string`
+  Useful to categorize logs apart from others, will be passed to all log entries.
+
 - **`measurement`** ` number | string`
   A number representing a measurement made for the event commonly in milliseconds or a formated string. The user can store any number here and the transport can do anything with it.
 
@@ -85,9 +88,6 @@ logger.publish('<level>', '<title>', 'message', { ...rest })
 
   You can also specify an array of levels in case you want an arbitrary group of log entries to be logged, for example if you especify `['INFO', 'QUERY']`, only those kind of log entries will be published.
 
-- **`category`** `string`
-  Useful to categorize logs apart from others, will be passed to all log entries.
-
 - **`silence`** `boolean`
   Set this as true if you want the logger to not publish any log entry form the begining.
 
@@ -111,9 +111,24 @@ An object containing all the logentry information to be transported to your fanc
 - **`index`** `number`
   The number of log entries that have been published since the logger started publishing.
 
-- **`category`** `string`
-  The logger configured category.
 
+### addTransport()
+
+Adds a new transport to also be cosidered when publishing an entry.
+
+```js
+logger.addTransport('new-transport', transport)
+```
+
+### getTransport()
+
+Gets a named transport so we can manipulate its behaviour 
+
+```js
+const trasnport = logger.getTransport('terminal')
+
+transport.setCategoryColor('SQL', 'YELLOW')
+```
 ### TransportInterface
 
 For typescript users this is the interface a Transport implements, to ensure the log method is implemented.
@@ -136,7 +151,7 @@ This logger provided terminal printing transport.
 import Logger, { TerminalTransport } from '@universal-packages/logger'
 
 const transport = new TerminalTransport()
-const logger = new Logger({ transport })
+const logger = new Logger({ transports: { terminal: transport } })
 
 logger.publish('INFO', 'We are online')
 logger.publish({ level: 'INFO', title: 'We are online' })
@@ -153,6 +168,13 @@ logger.publish({ level: 'INFO', title: 'We are online' })
 - **`categoryColor`** `'BLACK' | 'RED' | 'YELLOW' | 'PURPLE' | 'BLUE' | 'GRAY' | 'DARK' | 'GREEN' | 'AQUA' | 'KIWI'`
   Color scheme to use when printing the logger category
 
+### setCategoryColor()
+
+When printing the category of an entry if the category matches the transporter will use a special color for it.
+
+```js
+transport.setCategoryColor('SQL', 'YELLOW')
+```
 ## LocalFileTransport
 
 This logger provided file appending transport, the usual `logs/environment.log` with all logs in it, the environment file name selected from the [TransportLogEntry](#transportlogentry).
