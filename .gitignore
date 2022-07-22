@@ -9,6 +9,8 @@
 /logs
 /playground
 .tsbuildinfo
+test.ts
+test.js
 
 # misc
 .vscode
