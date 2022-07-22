@@ -38,7 +38,11 @@ describe('Logger', (): void => {
     for (let i = 0; i < levels.length; i++) {
       const currentLevel = levels[i] as LogLevel
       const testTransport = { log: jest.fn() }
-      const logger = new Logger({ level: currentLevel, transports: { testTransport } })
+      const logger = new Logger({ level: 'DEBUG', transports: { testTransport } })
+
+      expect(logger.level).toEqual('DEBUG')
+
+      logger.level = currentLevel
 
       for (let j = 0; j < levels.length; j++) {
         const currentLogLevel = levels[j] as LogLevel

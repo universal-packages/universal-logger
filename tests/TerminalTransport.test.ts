@@ -9,7 +9,7 @@ beforeAll((): void => {
 describe('TerminalTransport', (): void => {
   it('clears the terminal af first log', async (): Promise<void> => {
     const writeMock = jest.fn()
-    const transport = new TerminalTransport({ clear: true })
+    const transport = new TerminalTransport({ clear: true, withHeader: true })
 
     process.stdout.write = ((line: string): void => {
       writeMock(stripAnsi(line))
@@ -26,7 +26,7 @@ describe('TerminalTransport', (): void => {
 
   it('prints the formated logs', async (): Promise<void> => {
     const writeMock = jest.fn()
-    const transport = new TerminalTransport()
+    const transport = new TerminalTransport({ withHeader: true })
 
     process.stdout.write = ((line: string): void => {
       writeMock(stripAnsi(line))
@@ -68,7 +68,7 @@ describe('TerminalTransport', (): void => {
 
   it('prints the formated logs with a category', async (): Promise<void> => {
     const writeMock = jest.fn()
-    const transport = new TerminalTransport()
+    const transport = new TerminalTransport({ withHeader: true })
 
     process.stdout.write = ((line: string): void => {
       writeMock(stripAnsi(line))
@@ -111,7 +111,7 @@ describe('TerminalTransport', (): void => {
     const colors: CategoryColor[] = ['AQUA', 'BLACK', 'BLUE', 'DARK', 'GRAY', 'GREEN', 'KIWI', 'PURPLE', 'RED', 'YELLOW']
 
     for (let i = 0; i < colors.length; i++) {
-      const transport = new TerminalTransport({ categoryColors: { Cat: colors[i] } })
+      const transport = new TerminalTransport({ categoryColors: { Cat: colors[i] }, withHeader: true })
 
       transport.log({ category: 'Cat', level: 'TRACE', title: 'title', timestamp: new Date(), index: 1, environment: 'test' })
     }
@@ -131,7 +131,7 @@ describe('TerminalTransport', (): void => {
   })
 
   it('can set category color on the fly', async (): Promise<void> => {
-    const transport = new TerminalTransport()
+    const transport = new TerminalTransport({ withHeader: true })
 
     transport.setCategoryColor('cat', 'AQUA')
 

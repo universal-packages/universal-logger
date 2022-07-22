@@ -47,8 +47,8 @@ export default class Logger {
   }
 
   /** Gets a named transport  */
-  public getTransport<T>(name: string): T | TransportInterface {
-    return this.transports[name]
+  public getTransport<T = TransportInterface>(name: string): T {
+    return this.transports[name] as unknown as T
   }
 
   /** Returns the buffer dispatcher promise so you can await untill all logs have been processed */
@@ -133,13 +133,13 @@ export default class Logger {
   private canBeLogged(logEntry: LogEntry): boolean {
     if (this.silence) return false
 
-    if (typeof this.options.level === 'string') {
-      const optionsLevelScale = this.LOG_LEVELS_SCALE[this.options.level]
+    if (typeof this.level === 'string') {
+      const optionsLevelScale = this.LOG_LEVELS_SCALE[this.level]
       const entryLevelScale = this.LOG_LEVELS_SCALE[logEntry.level]
 
       return optionsLevelScale >= entryLevelScale
     } else {
-      return this.options.level.includes(logEntry.level)
+      return this.level.includes(logEntry.level)
     }
   }
 }

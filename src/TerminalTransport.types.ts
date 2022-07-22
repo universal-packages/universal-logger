@@ -7,4 +7,5 @@ export interface NamedCategoryColors {
 export interface TerminalTransportOptions {
   clear?: boolean
   categoryColors?: NamedCategoryColors
+  withHeader?: boolean
 }

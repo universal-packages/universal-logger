@@ -18,13 +18,18 @@ export default class TerminalTransport implements TransportInterface {
   private readonly categoryColors: NamedCategoryColors
 
   public constructor(options?: TerminalTransportOptions) {
-    this.options = { clear: false, ...options }
+    this.options = { clear: false, withHeader: false, ...options }
     this.categoryColors = { ...this.options.categoryColors }
   }
 
   /** Sets a category color for entries that include it */
   public setCategoryColor(category: string, color: CategoryColor): void {
     this.categoryColors[category] = color
+  }
+
+  /** Sets the withHeader option */
+  public printHeader(setting = true) {
+    this.options.withHeader = setting
   }
 
   /** Prints a log entry in ther terminal gracefuly */
@@ -34,15 +39,19 @@ export default class TerminalTransport implements TransportInterface {
       process.stdout.write(`\n`)
     }
 
-    const tagsFormat = chalk.bgRgb(30, 30, 30).bold.rgb(240, 240, 240)
-    const categoryTag = logEntry.category ? ` ${this.getCategoryColor(this.categoryColors[logEntry.category])(` ${logEntry.category} `)}` : ''
-    const environmentTag = ` ${tagsFormat(` ${logEntry.environment} `)}`
-    const measurementTag = logEntry.measurement ? ` ${tagsFormat(` ${logEntry.measurement} `)}` : ''
-    const timestampTag = ` ${tagsFormat(` ${logEntry.timestamp.toLocaleTimeString()} `)}`
+    let toAppend = ''
 
-    let toAppend = `${this.getLevelBackgroundChalk(logEntry.level)(
-      ` ${this.pad(logEntry.index)} ${logEntry.level} `
-    )}${categoryTag}${environmentTag}${measurementTag}${timestampTag}\n`
+    if (this.options.withHeader) {
+      const tagsFormat = chalk.bgRgb(30, 30, 30).bold.rgb(240, 240, 240)
+      const categoryTag = logEntry.category ? ` ${this.getCategoryColor(this.categoryColors[logEntry.category])(` ${logEntry.category} `)}` : ''
+      const environmentTag = ` ${tagsFormat(` ${logEntry.environment} `)}`
+      const measurementTag = logEntry.measurement ? ` ${tagsFormat(` ${logEntry.measurement} `)}` : ''
+      const timestampTag = ` ${tagsFormat(` ${logEntry.timestamp.toLocaleTimeString()} `)}`
+
+      toAppend = `${this.getLevelBackgroundChalk(logEntry.level)(
+        ` ${this.pad(logEntry.index)} ${logEntry.level} `
+      )}${categoryTag}${environmentTag}${measurementTag}${timestampTag}\n`
+    }
 
     if (logEntry.title) toAppend = toAppend + `${this.getLevelTextChalk(logEntry.level).bold(`${logEntry.title}`)}\n`
     if (logEntry.message) toAppend = toAppend + `${this.getLevelTextChalk(logEntry.level)(logEntry.message)}\n`
