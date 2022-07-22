@@ -17,11 +17,11 @@ describe('TerminalTransport', (): void => {
 
     transport.log({ level: 'TRACE', title: 'title', timestamp: new Date(), index: 1, environment: 'test' })
 
-    expect(writeMock.mock.calls).toEqual([[''], ['\n'], [' 001 TRACE   test   date \ntitle\n\n']])
+    expect(writeMock.mock.calls).toEqual([[''], ['\n'], [' 001 TRACE   test   date \ntitle\n'], ['\n']])
 
     transport.log({ level: 'TRACE', title: 'title', timestamp: new Date(), index: 35, environment: 'test' })
 
-    expect(writeMock.mock.calls).toEqual([[''], ['\n'], [' 001 TRACE   test   date \ntitle\n\n'], [' 035 TRACE   test   date \ntitle\n\n']])
+    expect(writeMock.mock.calls).toEqual([[''], ['\n'], [' 001 TRACE   test   date \ntitle\n'], ['\n'], [' 035 TRACE   test   date \ntitle\n'], ['\n']])
   })
 
   it('prints the formated logs', async (): Promise<void> => {
@@ -53,16 +53,24 @@ describe('TerminalTransport', (): void => {
     transport.log({ level: 'FATAL', title: 'title', timestamp: new Date(), index: 10000, environment: 'test' })
 
     expect(writeMock.mock.calls).toEqual([
-      [" 001 TRACE   test   date \ntitle\n⚑ { this: { is: { meta: 'data' } } }\n\n"],
+      [" 001 TRACE   test   date \ntitle\n⚑ { this: { is: { meta: 'data' } } }\n"],
+      ['\n'],
       [
-        ' 010 DEBUG   test   date \ntitle\nwith message\n⚑ {\n  this: {\n    is: {\n      meta: {\n        this: {\n          is: {\n            meta: [Object]\n          }\n        }\n      }\n    }\n  }\n}\n\n'
+        ' 010 DEBUG   test   date \ntitle\nwith message\n⚑ {\n  this: {\n    is: {\n      meta: {\n        this: {\n          is: {\n            meta: [Object]\n          }\n        }\n      }\n    }\n  }\n}\n'
       ],
-      [' 100 INFO   test   date \ntitle\n⚑ { test: true }\n\n'],
-      [' 200 QUERY   test   100   date \ntitle\n\n'],
-      [' 1000 WARNING   test   formated   date \ntitle\n\n'],
-      [' 2000 ERROR   test   date \ntitle\nerror\nError: error}\nerror here\nerror there\n\n'],
-      [' 2001 ERROR   test   date \ntitle\nerror\nError: error}\n\n'],
-      [' 10000 FATAL   test   date \ntitle\n\n']
+      ['\n'],
+      [' 100 INFO   test   date \ntitle\n⚑ { test: true }\n'],
+      ['\n'],
+      [' 200 QUERY   test   100   date \ntitle\n'],
+      ['\n'],
+      [' 1000 WARNING   test   formated   date \ntitle\n'],
+      ['\n'],
+      [' 2000 ERROR   test   date \ntitle\nerror\nError: error}\nerror here\nerror there\n'],
+      ['\n'],
+      [' 2001 ERROR   test   date \ntitle\nerror\nError: error}\n'],
+      ['\n'],
+      [' 10000 FATAL   test   date \ntitle\n'],
+      ['\n']
     ])
   })
 
@@ -90,14 +98,22 @@ describe('TerminalTransport', (): void => {
     transport.log({ category: 'Cat', level: 'FATAL', title: 'title', timestamp: new Date(), index: 10000, environment: 'test' })
 
     expect(writeMock.mock.calls).toEqual([
-      [' 001 TRACE   Cat   test   date \ntitle\n\n'],
-      [' 010 DEBUG   Cat   test   date \ntitle\nwith message\n\n'],
-      [' 100 INFO   Cat   test   date \ntitle\n⚑ { test: true }\n\n'],
-      [' 200 QUERY   Cat   test   100   date \ntitle\n\n'],
-      [' 1000 WARNING   Cat   test   formated   date \ntitle\n\n'],
-      [' 2000 ERROR   Cat   test   date \ntitle\nerror\nerror here\nerror there\n\n'],
-      [' 2001 ERROR   Cat   test   date \ntitle\nerror\n\n'],
-      [' 10000 FATAL   Cat   test   date \ntitle\n\n']
+      [' 001 TRACE   Cat   test   date \ntitle\n'],
+      ['\n'],
+      [' 010 DEBUG   Cat   test   date \ntitle\nwith message\n'],
+      ['\n'],
+      [' 100 INFO   Cat   test   date \ntitle\n⚑ { test: true }\n'],
+      ['\n'],
+      [' 200 QUERY   Cat   test   100   date \ntitle\n'],
+      ['\n'],
+      [' 1000 WARNING   Cat   test   formated   date \ntitle\n'],
+      ['\n'],
+      [' 2000 ERROR   Cat   test   date \ntitle\nerror\nerror here\nerror there\n'],
+      ['\n'],
+      [' 2001 ERROR   Cat   test   date \ntitle\nerror\n'],
+      ['\n'],
+      [' 10000 FATAL   Cat   test   date \ntitle\n'],
+      ['\n']
     ])
   })
 
@@ -117,16 +133,26 @@ describe('TerminalTransport', (): void => {
     }
 
     expect(writeMock.mock.calls).toEqual([
-      [' 001 TRACE   Cat   test   date \ntitle\n\n'],
-      [' 001 TRACE   Cat   test   date \ntitle\n\n'],
-      [' 001 TRACE   Cat   test   date \ntitle\n\n'],
-      [' 001 TRACE   Cat   test   date \ntitle\n\n'],
-      [' 001 TRACE   Cat   test   date \ntitle\n\n'],
-      [' 001 TRACE   Cat   test   date \ntitle\n\n'],
-      [' 001 TRACE   Cat   test   date \ntitle\n\n'],
-      [' 001 TRACE   Cat   test   date \ntitle\n\n'],
-      [' 001 TRACE   Cat   test   date \ntitle\n\n'],
-      [' 001 TRACE   Cat   test   date \ntitle\n\n']
+      [' 001 TRACE   Cat   test   date \ntitle\n'],
+      ['\n'],
+      [' 001 TRACE   Cat   test   date \ntitle\n'],
+      ['\n'],
+      [' 001 TRACE   Cat   test   date \ntitle\n'],
+      ['\n'],
+      [' 001 TRACE   Cat   test   date \ntitle\n'],
+      ['\n'],
+      [' 001 TRACE   Cat   test   date \ntitle\n'],
+      ['\n'],
+      [' 001 TRACE   Cat   test   date \ntitle\n'],
+      ['\n'],
+      [' 001 TRACE   Cat   test   date \ntitle\n'],
+      ['\n'],
+      [' 001 TRACE   Cat   test   date \ntitle\n'],
+      ['\n'],
+      [' 001 TRACE   Cat   test   date \ntitle\n'],
+      ['\n'],
+      [' 001 TRACE   Cat   test   date \ntitle\n'],
+      ['\n']
     ])
   })
 

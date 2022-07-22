@@ -58,7 +58,8 @@ export default class TerminalTransport implements TransportInterface {
     if (logEntry.error) toAppend = toAppend + this.printError(logEntry.error)
     if (logEntry.metadata) toAppend = toAppend + this.printMetadata(logEntry.metadata)
 
-    process.stdout.write(`${toAppend}\n`)
+    process.stdout.write(toAppend)
+    if (this.options.withHeader) process.stdout.write('\n')
   }
 
   /** Quik pad number */
