@@ -178,14 +178,6 @@ logger.publish({ level: 'INFO', title: 'We are online' })
 - **`categoryColor`** `'BLACK' | 'RED' | 'YELLOW' | 'PURPLE' | 'BLUE' | 'GRAY' | 'DARK' | 'GREEN' | 'AQUA' | 'KIWI'`
   Color scheme to use when printing the logger category
 
-### setCategoryColor()
-
-When printing the category of an entry if the category matches the transporter will use a special color for it.
-
-```js
-transport.setCategoryColor('SQL', 'YELLOW')
-```
-
 ## LocalFileTransport
 
 This logger provided file appending transport, the usual `logs/environment.log` with all logs in it, the environment file name selected from the [TransportLogEntry](#transportlogentry).
