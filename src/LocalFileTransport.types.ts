@@ -1,5 +1,5 @@
 export interface LocalFileTransportOptions {
-  asJSON?: boolean
+  asJson?: boolean
   location?: string
   withHeader?: boolean
 }

@@ -11,7 +11,7 @@ export default class LocalFileTransport implements TransportInterface {
   public enabled = true
 
   public constructor(options?: LocalFileTransportOptions) {
-    this.options = { location: './logs', asJSON: false, ...options }
+    this.options = { location: './logs', asJson: false, ...options }
     ensureDirectory(this.options.location)
   }
 
@@ -21,7 +21,7 @@ export default class LocalFileTransport implements TransportInterface {
     const location = path.resolve(this.options.location, `${logEntry.environment}.log`)
     ensureFile(location)
 
-    if (this.options.asJSON) {
+    if (this.options.asJson) {
       fs.appendFileSync(location, `${JSON.stringify(logEntry)}\n`)
     } else {
       const categoryTag = logEntry.category ? `${` | ${logEntry.category}`}` : ''

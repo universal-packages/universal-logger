@@ -77,7 +77,7 @@ describe('LocalFileTranport', (): void => {
 
   it('appends the logs in the file as json lines', async (): Promise<void> => {
     const appendMock = jest.fn()
-    const transport = new LocalFileTransport({ asJSON: true })
+    const transport = new LocalFileTransport({ asJson: true })
 
     fs.appendFileSync = appendMock
 

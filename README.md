@@ -198,7 +198,7 @@ logger.publish({ level: 'INFO', title: 'We are online' })
 
 ## Options
 
-- **`asJSON`** `boolean`
+- **`asJson`** `boolean`
   If true lines in the file will only be the serialized [TransportLogEntry](#transportlogentry).
 
 - **`logsLocation`** `string`
