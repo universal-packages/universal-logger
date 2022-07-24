@@ -51,6 +51,12 @@ export default class Logger {
     return this.transports[name] as unknown as T
   }
 
+  /** Removes a named transport  */
+  public removeTransport(name: string): void {
+    delete this.transports[name]
+    this.transportKeys = Object.keys(this.transports)
+  }
+
   /** Returns the buffer dispatcher promise so you can await untill all logs have been processed */
   public async await(): Promise<void> {
     return this.bufferDispatcher.await()

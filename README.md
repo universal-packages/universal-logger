@@ -111,7 +111,6 @@ An object containing all the logentry information to be transported to your fanc
 - **`index`** `number`
   The number of log entries that have been published since the logger started publishing.
 
-
 ### addTransport()
 
 Adds a new transport to also be cosidered when publishing an entry.
@@ -122,13 +121,22 @@ logger.addTransport('new-transport', transport)
 
 ### getTransport()
 
-Gets a named transport so we can manipulate its behaviour 
+Gets a named transport so we can manipulate its behaviour
 
 ```js
 const trasnport = logger.getTransport('terminal')
 
 transport.setCategoryColor('SQL', 'YELLOW')
 ```
+
+### removeTransport()
+
+Removes a transport to avoid publish to it.
+
+```js
+logger.removeTransport('transport')
+```
+
 ### TransportInterface
 
 For typescript users this is the interface a Transport implements, to ensure the log method is implemented.
@@ -137,7 +145,9 @@ For typescript users this is the interface a Transport implements, to ensure the
 import { TransportInterface, LogEntry } from '../logger'
 
 export default class CustomTransport implements TransportInterface {
+  public enabled = true // Required, use it to enable or disable logging by transport
   public log(entry: TransportLogEntry): void {
+    if (!this.enabled) return
     console.log(JSON.stringify(entry))
   }
 }
@@ -175,6 +185,7 @@ When printing the category of an entry if the category matches the transporter w
 ```js
 transport.setCategoryColor('SQL', 'YELLOW')
 ```
+
 ## LocalFileTransport
 
 This logger provided file appending transport, the usual `logs/environment.log` with all logs in it, the environment file name selected from the [TransportLogEntry](#transportlogentry).

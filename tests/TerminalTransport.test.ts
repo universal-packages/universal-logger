@@ -72,6 +72,11 @@ describe('TerminalTransport', (): void => {
       [' 10000 FATAL   test   date \ntitle\n'],
       ['\n']
     ])
+
+    transport.enabled = false
+    transport.log({ level: 'TRACE', metadata, title: 'title', timestamp: new Date(), index: 1, environment: 'test' })
+
+    expect(writeMock).toHaveBeenCalledTimes(16)
   })
 
   it('prints the formated logs with a category', async (): Promise<void> => {

@@ -9,6 +9,8 @@ import { TransportLogEntry, TransportInterface } from './Logger.types'
 export default class LocalFileTransport implements TransportInterface {
   private readonly options: LocalFileTransportOptions
 
+  public enabled = true
+
   public constructor(options?: LocalFileTransportOptions) {
     this.options = { logsLocation: './logs', asJSON: false, ...options }
     ensureDirectory(this.options.logsLocation)
@@ -16,6 +18,7 @@ export default class LocalFileTransport implements TransportInterface {
 
   /** Prints a log entry in ther terminal gracefuly */
   public async log(logEntry: TransportLogEntry): Promise<void> {
+    if (!this.enabled) return
     const location = path.resolve(this.options.logsLocation, `${logEntry.environment}.log`)
     ensureFile(location)
 

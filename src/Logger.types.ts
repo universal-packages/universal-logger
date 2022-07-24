@@ -31,5 +31,6 @@ export interface TransportLogEntry extends LogEntry {
 }
 
 export interface TransportInterface {
+  enabled: boolean
   log(LogEntry: TransportLogEntry): void | Promise<void>
 }

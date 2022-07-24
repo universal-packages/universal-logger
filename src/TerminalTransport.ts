@@ -17,6 +17,8 @@ export default class TerminalTransport implements TransportInterface {
   private readonly options: TerminalTransportOptions
   private readonly categoryColors: NamedCategoryColors
 
+  public enabled = true
+
   public constructor(options?: TerminalTransportOptions) {
     this.options = { clear: false, withHeader: false, ...options }
     this.categoryColors = { ...this.options.categoryColors }
@@ -34,6 +36,7 @@ export default class TerminalTransport implements TransportInterface {
 
   /** Prints a log entry in ther terminal gracefuly */
   public async log(logEntry: TransportLogEntry): Promise<void> {
+    if (!this.enabled) return
     if (this.options.clear && logEntry.index === 1) {
       process.stdout.write(ansiEscapes.clearTerminal)
       process.stdout.write(`\n`)
