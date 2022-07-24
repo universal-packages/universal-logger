@@ -7,19 +7,18 @@ import { TransportLogEntry, TransportInterface } from './Logger.types'
 
 /** This transport will append all log entries into a local log file */
 export default class LocalFileTransport implements TransportInterface {
-  private readonly options: LocalFileTransportOptions
-
+  public readonly options: LocalFileTransportOptions
   public enabled = true
 
   public constructor(options?: LocalFileTransportOptions) {
-    this.options = { logsLocation: './logs', asJSON: false, ...options }
-    ensureDirectory(this.options.logsLocation)
+    this.options = { location: './logs', asJSON: false, ...options }
+    ensureDirectory(this.options.location)
   }
 
   /** Prints a log entry in ther terminal gracefuly */
   public async log(logEntry: TransportLogEntry): Promise<void> {
     if (!this.enabled) return
-    const location = path.resolve(this.options.logsLocation, `${logEntry.environment}.log`)
+    const location = path.resolve(this.options.location, `${logEntry.environment}.log`)
     ensureFile(location)
 
     if (this.options.asJSON) {

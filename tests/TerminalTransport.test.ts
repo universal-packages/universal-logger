@@ -160,12 +160,4 @@ describe('TerminalTransport', (): void => {
       ['\n']
     ])
   })
-
-  it('can set category color on the fly', async (): Promise<void> => {
-    const transport = new TerminalTransport({ withHeader: true })
-
-    transport.setCategoryColor('cat', 'AQUA')
-
-    expect((transport as any).categoryColors).toEqual({ cat: 'AQUA' })
-  })
 })

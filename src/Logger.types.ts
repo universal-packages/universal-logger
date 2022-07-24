@@ -11,7 +11,6 @@ export interface LoggerOptions {
 
 export interface PartialLogEntry {
   error?: Error
-  environment?: string
   measurement?: number | string
   metadata?: Record<string, any>
   tags?: string[]

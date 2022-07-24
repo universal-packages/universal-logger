@@ -1,5 +1,5 @@
 export interface LocalFileTransportOptions {
   asJSON?: boolean
-  logsLocation?: string
+  location?: string
   withHeader?: boolean
 }

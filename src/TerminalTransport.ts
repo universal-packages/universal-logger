@@ -14,24 +14,11 @@ import { TerminalTransportOptions, CategoryColor, NamedCategoryColors } from './
  *
  */
 export default class TerminalTransport implements TransportInterface {
-  private readonly options: TerminalTransportOptions
-  private readonly categoryColors: NamedCategoryColors
-
+  public readonly options: TerminalTransportOptions
   public enabled = true
 
   public constructor(options?: TerminalTransportOptions) {
-    this.options = { clear: false, withHeader: false, ...options }
-    this.categoryColors = { ...this.options.categoryColors }
-  }
-
-  /** Sets a category color for entries that include it */
-  public setCategoryColor(category: string, color: CategoryColor): void {
-    this.categoryColors[category] = color
-  }
-
-  /** Sets the withHeader option */
-  public printHeader(setting = true) {
-    this.options.withHeader = setting
+    this.options = { clear: false, withHeader: false, categoryColors: {}, ...options }
   }
 
   /** Prints a log entry in ther terminal gracefuly */
@@ -46,7 +33,7 @@ export default class TerminalTransport implements TransportInterface {
 
     if (this.options.withHeader) {
       const tagsFormat = chalk.bgRgb(30, 30, 30).bold.rgb(240, 240, 240)
-      const categoryTag = logEntry.category ? ` ${this.getCategoryColor(this.categoryColors[logEntry.category])(` ${logEntry.category} `)}` : ''
+      const categoryTag = logEntry.category ? ` ${this.getCategoryColor(this.options.categoryColors[logEntry.category])(` ${logEntry.category} `)}` : ''
       const environmentTag = ` ${tagsFormat(` ${logEntry.environment} `)}`
       const measurementTag = logEntry.measurement ? ` ${tagsFormat(` ${logEntry.measurement} `)}` : ''
       const timestampTag = ` ${tagsFormat(` ${logEntry.timestamp.toLocaleTimeString()} `)}`
