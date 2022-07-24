@@ -194,4 +194,13 @@ describe('Logger', (): void => {
 
     expect(logger.getTransport('testTransport')).toEqual(testTransport)
   })
+
+  it('can remove a transport', async (): Promise<void> => {
+    const testTransport = { enabled: true, log: jest.fn() }
+    let logger = new Logger({ transports: { testTransport } })
+
+    logger.removeTransport('testTransport')
+
+    expect(logger.getTransport('testTransport')).toEqual(undefined)
+  })
 })
