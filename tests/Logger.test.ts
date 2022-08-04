@@ -33,7 +33,7 @@ describe('Logger', (): void => {
   })
 
   it('will not publish if the log enrtry level is not in the importance spectrum', async (): Promise<void> => {
-    const levels = ['TRACE', 'DEBUG', 'QUERY', 'INFO', 'WARNING', 'ERROR', 'FATAL']
+    const levels = ['TRACE', 'DEBUG', 'INFO', 'QUERY', 'WARNING', 'ERROR', 'FATAL']
 
     for (let i = 0; i < levels.length; i++) {
       const currentLevel = levels[i] as LogLevel
