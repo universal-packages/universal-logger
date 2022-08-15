@@ -1,4 +1,11 @@
-import Logger, { LogLevel } from '../src'
+import { Logger, LogLevel } from '../src'
+
+jest.spyOn(console, 'log').mockImplementation(jest.fn())
+jest.spyOn(console, 'warn').mockImplementation(jest.fn())
+
+beforeEach((): void => {
+  jest.clearAllMocks()
+})
 
 describe('Logger', (): void => {
   it('will publish a log entry to all configured trasports transports', async (): Promise<void> => {
@@ -77,15 +84,13 @@ describe('Logger', (): void => {
   })
 
   it('console war if no transport is there to log the entry', async (): Promise<void> => {
-    const consoleLogMock = jest.fn()
-    console.warn = consoleLogMock
     const logger = new Logger({ transports: {} })
 
     logger.publish({ level: 'INFO', title: 'This is a tilte' })
 
     await logger.await()
 
-    expect(consoleLogMock).toHaveBeenCalledWith('WARNING: no transports configured in logger')
+    expect(console.warn).toHaveBeenCalledWith('WARNING: no transports configured in logger')
   })
 
   it('console log if no transport successully loggged an entry', async (): Promise<void> => {
@@ -95,16 +100,14 @@ describe('Logger', (): void => {
         throw 'Nop'
       }
     }
-    const consoleLogMock = jest.fn()
     const originalLog = console.log
-    console.log = consoleLogMock
     const logger = new Logger({ transports: { errorTransport } })
 
     logger.publish({ level: 'INFO', title: 'This is a tilte' })
 
     await logger.await()
 
-    expect(consoleLogMock).toHaveBeenCalledWith('Nop')
+    expect(console.log).toHaveBeenCalledWith('Nop')
 
     console.log = originalLog
   })

@@ -13,9 +13,11 @@
     "test:full": "jest --coverage --verbose"
   },
   "dependencies": {
-    "@universal-packages/buffer-dispatcher": "^1.0.1",
+    "@universal-packages/buffer-dispatcher": "^1.1.0",
     "@universal-packages/fs-utils": "^1.0.0",
-    "chalk": "^4.1.2"
+    "ansi-escapes": "^4.3.2",
+    "chalk": "^4.1.2",
+    "strip-ansi": "^6.0.1"
   },
   "devDependencies": {
     "@types/jest": "^28.1.0",

@@ -1,4 +1,4 @@
-import BufferDispatcher from '@universal-packages/buffer-dispatcher'
+import { BufferDispatcher } from '@universal-packages/buffer-dispatcher'
 import { TerminalTransport } from '.'
 import LocalFileTransport from './LocalFileTransport'
 import { LogEntry, LoggerOptions, TransportInterface, TransportLogEntry, LogLevel, PartialLogEntry, NamedTransports } from './Logger.types'

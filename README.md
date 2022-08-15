@@ -25,7 +25,7 @@ It will apply the following rules before passing the log entry to the transports
 By default a logger transports are a `TerminalTransport` and a `LocalFileTransport`.
 
 ```js
-import Logger from '@universal-packages/logger'
+import { Logger } from '@universal-packages/logger'
 
 const logger = new Logger()
 
@@ -158,7 +158,7 @@ export default class CustomTransport implements TransportInterface {
 This logger provided terminal printing transport.
 
 ```js
-import Logger, { TerminalTransport } from '@universal-packages/logger'
+import { Logger, TerminalTransport } from '@universal-packages/logger'
 
 const transport = new TerminalTransport()
 const logger = new Logger({ transports: { terminal: transport } })
@@ -183,7 +183,7 @@ logger.publish({ level: 'INFO', title: 'We are online' })
 This logger provided file appending transport, the usual `logs/environment.log` with all logs in it, the environment file name selected from the [TransportLogEntry](#transportlogentry).
 
 ```js
-import Logger, { LocalFileTransport } from '@universal-packages/logger'
+import { Logger, LocalFileTransport } from '@universal-packages/logger'
 
 const transport = new LocalFileTransport()
 const logger = new Logger({ transport })

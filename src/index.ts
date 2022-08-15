@@ -1,4 +1,4 @@
-export { default } from './Logger'
+export { default as Logger } from './Logger'
 export * from './Logger.types'
 export { default as TerminalTransport } from './TerminalTransport'
 export * from './TerminalTransport.types'
