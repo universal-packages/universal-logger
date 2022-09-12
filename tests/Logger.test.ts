@@ -40,7 +40,7 @@ describe('Logger', (): void => {
   })
 
   it('will not publish if the log enrtry level is not in the importance spectrum', async (): Promise<void> => {
-    const levels = ['TRACE', 'DEBUG', 'INFO', 'QUERY', 'WARNING', 'ERROR', 'FATAL']
+    const levels = ['TRACE', 'DEBUG', 'QUERY', 'INFO', 'WARNING', 'ERROR', 'FATAL']
 
     for (let i = 0; i < levels.length; i++) {
       const currentLevel = levels[i] as LogLevel
@@ -100,7 +100,6 @@ describe('Logger', (): void => {
         throw 'Nop'
       }
     }
-    const originalLog = console.log
     const logger = new Logger({ transports: { errorTransport } })
 
     logger.publish({ level: 'INFO', title: 'This is a tilte' })
@@ -108,8 +107,6 @@ describe('Logger', (): void => {
     await logger.await()
 
     expect(console.log).toHaveBeenCalledWith('Nop')
-
-    console.log = originalLog
   })
 
   it('logs the error of another transport in all other transports if one files', async (): Promise<void> => {

@@ -45,7 +45,7 @@ logger.publish({ ...logEntry })
 logger.publish('<level>', '<title>', 'message', { ...rest })
 ```
 
-- **`level`** `'FATAL' | 'ERROR' | 'WARNING' | 'QUERY' | 'INFO' | 'DEBUG' | 'TRACE'`
+- **`level`** `'FATAL' | 'ERROR' | 'WARNING' | 'INFO' | 'QUERY' | 'DEBUG' | 'TRACE'`
   Log level to which this log entry belongs.
 
 - **`title`** `string`
@@ -79,8 +79,8 @@ logger.publish('<level>', '<title>', 'message', { ...rest })
   0. `FATAL`
   1. `ERROR`
   2. `WARNING`
-  3. `QUERY`
-  4. `INFO`
+  3. `INFO`
+  4. `QUERY`
   5. `DEBUG`
   6. `TRACE`
 

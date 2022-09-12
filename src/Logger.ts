@@ -25,7 +25,7 @@ export default class Logger {
   private transportKeys: string[]
   private currentIndex = 0
 
-  private readonly LOG_LEVELS_SCALE: { [level in LogLevel]: number } = { FATAL: 0, ERROR: 1, WARNING: 2, QUERY: 3, INFO: 4, DEBUG: 5, TRACE: 6 }
+  private readonly LOG_LEVELS_SCALE: { [level in LogLevel]: number } = { FATAL: 0, ERROR: 1, WARNING: 2, INFO: 3, QUERY: 4, DEBUG: 5, TRACE: 6 }
 
   public constructor(options?: LoggerOptions) {
     this.options = { level: 'TRACE', silence: false, transports: { terminal: new TerminalTransport(), localFile: new LocalFileTransport() }, ...options }
