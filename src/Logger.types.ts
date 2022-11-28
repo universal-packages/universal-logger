@@ -7,6 +7,7 @@ export interface LoggerOptions {
   level?: LogLevel | LogLevel[]
   silence?: boolean
   transports?: NamedTransports
+  filterMetadataKeys?: string[]
 }
 
 export interface PartialLogEntry {

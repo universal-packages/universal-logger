@@ -1,4 +1,5 @@
 import { BufferDispatcher } from '@universal-packages/buffer-dispatcher'
+import { mapObject } from '@universal-packages/object-mapper'
 import { TerminalTransport } from '.'
 import LocalFileTransport from './LocalFileTransport'
 import { LogEntry, LoggerOptions, TransportInterface, TransportLogEntry, LogLevel, PartialLogEntry, NamedTransports } from './Logger.types'
@@ -10,9 +11,9 @@ import { LogEntry, LoggerOptions, TransportInterface, TransportLogEntry, LogLeve
  * before passing the log entry to the transports:
  *
  * 1. Checks if the logger is not silent if it is it will not do anything with the log entry
- * 2. Check if the log entry is inside the configured log level thrshold
+ * 2. Check if the log entry is inside the configured log level threshold
  * 3. To ensure every log is dispatched after the other we use a buffer dispatcher that
- * awaits until the transport finishes processing the log entry and then continue with the nexts one.
+ * awaits until the transport finishes processing the log entry and then continue with the next one.
  *
  */
 export default class Logger {
@@ -28,7 +29,15 @@ export default class Logger {
   private readonly LOG_LEVELS_SCALE: { [level in LogLevel]: number } = { FATAL: 0, ERROR: 1, WARNING: 2, INFO: 3, QUERY: 4, DEBUG: 5, TRACE: 6 }
 
   public constructor(options?: LoggerOptions) {
-    this.options = { level: 'TRACE', silence: false, transports: { terminal: new TerminalTransport(), localFile: new LocalFileTransport() }, ...options }
+    this.options = {
+      level: 'TRACE',
+      silence: false,
+      transports: { terminal: new TerminalTransport(), localFile: new LocalFileTransport() },
+      ...options,
+      filterMetadataKeys: ['password', 'secret', 'token', ...(options.filterMetadataKeys || [])]
+        .filter((value: string, index: number, self: string[]): boolean => self.indexOf(value) === index)
+        .map((value: string): string => value.toLowerCase())
+    }
 
     this.silence = this.options.silence
     this.level = this.options.level
@@ -57,7 +66,7 @@ export default class Logger {
     this.transportKeys = Object.keys(this.transports)
   }
 
-  /** Returns the buffer dispatcher promise so you can await untill all logs have been processed */
+  /** Returns the buffer dispatcher promise so you can await until all logs have been processed */
   public async await(): Promise<void> {
     return this.bufferDispatcher.await()
   }
@@ -76,6 +85,10 @@ export default class Logger {
         environment: process.env['NODE_ENV']
       }
 
+      if (transportLogEntry.metadata) {
+        this.filterMetadata(transportLogEntry.metadata)
+      }
+
       this.bufferDispatcher.append(transportLogEntry)
     }
   }
@@ -83,7 +96,7 @@ export default class Logger {
   /** Called by buffer dispatcher when ready to process the next entry. */
   private async processEntry(logEntry: TransportLogEntry): Promise<void> {
     if (this.transportKeys.length === 0) console.warn('WARNING: no transports configured in logger')
-    const errorredTransports: { [transport: string]: Error } = {}
+    const erroredTransports: { [transport: string]: Error } = {}
     let withErrors = false
     const successfulTransports: TransportInterface[] = []
 
@@ -98,17 +111,17 @@ export default class Logger {
       } catch (error) {
         withErrors = true
         process.stdout.write(error.toString())
-        errorredTransports[currentTransportKey] = error
+        erroredTransports[currentTransportKey] = error
       }
     }
 
     if (withErrors) {
-      const errorKeys = Object.keys(errorredTransports)
+      const errorKeys = Object.keys(erroredTransports)
 
       if (successfulTransports.length === 0) {
         for (let j = 0; j < errorKeys.length; j++) {
           const currentErrorKey = errorKeys[j]
-          const currentError = errorredTransports[currentErrorKey]
+          const currentError = erroredTransports[currentErrorKey]
 
           console.log(currentError)
         }
@@ -118,11 +131,11 @@ export default class Logger {
 
           for (let j = 0; j < errorKeys.length; j++) {
             const currentErrorKey = errorKeys[j]
-            const currentError = errorredTransports[currentErrorKey]
+            const currentError = erroredTransports[currentErrorKey]
 
             await currentTransport.log({
               level: 'ERROR',
-              title: `"${currentErrorKey}" could't log beacuse an error inside the trasporter itself`,
+              title: `"${currentErrorKey}" could't log because an error inside the transporter itself`,
               error: currentError,
               timestamp: new Date(),
               index: ++this.currentIndex,
@@ -147,5 +160,12 @@ export default class Logger {
     } else {
       return this.level.includes(logEntry.level)
     }
+  }
+
+  private filterMetadata(metadata: Record<string, any>): void {
+    mapObject(metadata, null, (value: any, key: string): any => {
+      if (this.options.filterMetadataKeys.includes(key.toLowerCase())) return '<filtered>'
+      return value
+    })
   }
 }

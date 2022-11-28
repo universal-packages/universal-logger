@@ -19,8 +19,8 @@ A logger object job is to be an interface for what the user wants to log and pas
 It will apply the following rules before passing the log entry to the transports:
 
 1.  Checks if the logger is not silent if it is it will not do anything with the log entry
-2.  Check if the log entry is inside the configured log level thrshold
-3.  To ensure every log is dispatched after the other we use a buffer dispatcher that awaits until the transport finishes processing the log entry and then continue with the nexts one.
+2.  Check if the log entry is inside the configured log level threshold
+3.  To ensure every log is dispatched after the other we use a buffer dispatcher that awaits until the transport finishes processing the log entry and then continue with the next one.
 
 By default a logger transports are a `TerminalTransport` and a `LocalFileTransport`.
 
@@ -49,7 +49,7 @@ logger.publish('<level>', '<title>', 'message', { ...rest })
   Log level to which this log entry belongs.
 
 - **`title`** `string`
-  A quick and concise descritpion of the event to be logged.
+  A quick and concise description of the event to be logged.
 
 - **`message`** `string`
   Additional information about the event.
@@ -61,13 +61,13 @@ logger.publish('<level>', '<title>', 'message', { ...rest })
   Useful to categorize logs apart from others, will be passed to all log entries.
 
 - **`measurement`** ` number | string`
-  A number representing a measurement made for the event commonly in milliseconds or a formated string. The user can store any number here and the transport can do anything with it.
+  A number representing a measurement made for the event commonly in milliseconds or a formatted string. The user can store any number here and the transport can do anything with it.
 
 - **`metadata`** `{}`
   Additional information related to the event, an object with related data.
 
 - **`tags`** `string[]`
-  Additional information related to the event, an array of tags to clasify even further this event.
+  Additional information related to the event, an array of tags to classify even further this event.
 
 ## Options
 
@@ -86,13 +86,16 @@ logger.publish('<level>', '<title>', 'message', { ...rest })
 
   For example if you specify `WARNING` as level the logger will only publish log entries with level `WARNING`, `ERROR` and `FATAL`
 
-  You can also specify an array of levels in case you want an arbitrary group of log entries to be logged, for example if you especify `['INFO', 'QUERY']`, only those kind of log entries will be published.
+  You can also specify an array of levels in case you want an arbitrary group of log entries to be logged, for example if you specify `['INFO', 'QUERY']`, only those kind of log entries will be published.
 
 - **`silence`** `boolean`
-  Set this as true if you want the logger to not publish any log entry form the begining.
+  Set this as true if you want the logger to not publish any log entry form the beginning.
 
 - **`transport`** `TransportInterface | TransportInterface[]`
   Transport or group of transports to publish to.
+
+- **`filterMetadataKeys`** `String[]` `default: ['secret', 'password', 'token']`
+  Before publishing metadata to transports it will filter the value of these keys in the metadata object to `<filtered>`
 
 ## Custom transports
 
@@ -100,7 +103,7 @@ A transport is no more than an object that implements a `log` function that take
 
 ### TransportLogEntry
 
-An object containing all the logentry information to be transported to your fancy log system, extending from [LogEntry](#logentry)
+An object containing all the log entry information to be transported to your fancy log system, extending from [LogEntry](#logentry)
 
 - **`environment`** `Date`
   Teh environment the app is running `NODE_ENV`
@@ -113,7 +116,7 @@ An object containing all the logentry information to be transported to your fanc
 
 ### addTransport()
 
-Adds a new transport to also be cosidered when publishing an entry.
+Adds a new transport to also be considered when publishing an entry.
 
 ```js
 logger.addTransport('new-transport', transport)
@@ -121,7 +124,7 @@ logger.addTransport('new-transport', transport)
 
 ### getTransport()
 
-Gets a named transport so we can manipulate its behaviour
+Gets a named transport so we can manipulate its behavior
 
 ```js
 const trasnport = logger.getTransport('terminal')
@@ -173,7 +176,7 @@ logger.publish({ level: 'INFO', title: 'We are online' })
 ## Options
 
 - **`clear`** `boolean`
-  If true the terminal screen will be cleared before the first log entry is printed
+  If true the terminal screen will be cleared before the first log entry is printed.
 
 - **`categoryColor`** `'BLACK' | 'RED' | 'YELLOW' | 'PURPLE' | 'BLUE' | 'GRAY' | 'DARK' | 'GREEN' | 'AQUA' | 'KIWI'`
   Color scheme to use when printing the logger category
@@ -210,7 +213,7 @@ This library is developed in TypeScript and shipped fully typed.
 
 ## Contributing
 
-The development of this library in the open on GitHub, and we are grateful to the community for contributing bugfixes and improvements. Read below to learn how you can take part in improving this library.
+The development of this library happens in the open on GitHub, and we are grateful to the community for contributing bugfixes and improvements. Read below to learn how you can take part in improving this library.
 
 - [Code of Conduct](./CODE_OF_CONDUCT.md)
 - [Contributing Guide](./CONTRIBUTING.md)

@@ -21,7 +21,6 @@ export default class TerminalTransport implements TransportInterface {
     this.options = { clear: false, withHeader: false, categoryColors: {}, ...options }
   }
 
-  /** Prints a log entry in ther terminal gracefuly */
   public async log(logEntry: TransportLogEntry): Promise<void> {
     if (!this.enabled) return
     if (this.options.clear && logEntry.index === 1) {
@@ -52,7 +51,7 @@ export default class TerminalTransport implements TransportInterface {
     if (this.options.withHeader) process.stdout.write('\n')
   }
 
-  /** Quik pad number */
+  /** Quick pad number */
   private pad(number: number): string {
     if (number < 10) {
       return `00${number}`

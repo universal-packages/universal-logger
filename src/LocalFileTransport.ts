@@ -15,7 +15,7 @@ export default class LocalFileTransport implements TransportInterface {
     ensureDirectory(this.options.location)
   }
 
-  /** Prints a log entry in ther terminal gracefuly */
+  /** Prints a log entry in the terminal gracefully */
   public async log(logEntry: TransportLogEntry): Promise<void> {
     if (!this.enabled) return
     const location = path.resolve(this.options.location, `${logEntry.environment}.log`)
@@ -39,7 +39,7 @@ export default class LocalFileTransport implements TransportInterface {
     }
   }
 
-  /** Quik pad number */
+  /** Quick pad number */
   private pad(number: number): string {
     if (number < 10) {
       return `00${number}`

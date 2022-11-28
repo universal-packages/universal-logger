@@ -7,7 +7,7 @@ beforeAll((): void => {
   process.stdout.columns = 60
 })
 
-describe('LocalFileTranport', (): void => {
+describe('LocalFileTransport', (): void => {
   it('appends the logs in the file', async (): Promise<void> => {
     const appendMock = jest.fn()
     const transport = new LocalFileTransport()
@@ -96,7 +96,7 @@ describe('LocalFileTranport', (): void => {
     transport.log({ level: 'DEBUG', metadata: largeMetadata, title: 'title', message: 'with message', timestamp: new Date(), index: 10, environment: 'test' })
     transport.log({ level: 'INFO', title: 'title', metadata: { test: true }, timestamp: new Date(), index: 100, environment: 'test' })
     transport.log({ level: 'QUERY', title: 'title', measurement: 100, timestamp: new Date(), index: 200, environment: 'test' })
-    transport.log({ level: 'WARNING', title: 'title', measurement: 'formated', timestamp: new Date(), index: 1000, environment: 'test' })
+    transport.log({ level: 'WARNING', title: 'title', measurement: 'formatted', timestamp: new Date(), index: 1000, environment: 'test' })
     transport.log({ level: 'ERROR', title: 'title', error, timestamp: new Date(), index: 2000, environment: 'test' })
     transport.log({ level: 'ERROR', title: 'title', error: error2, timestamp: new Date(), index: 2001, environment: 'test' })
     transport.log({ level: 'FATAL', title: 'title', timestamp: new Date(), index: 10000, environment: 'test' })
@@ -112,14 +112,14 @@ describe('LocalFileTranport', (): void => {
       ],
       [expect.stringMatching(/logs\/test.log/g), '{"level":"INFO","title":"title","metadata":{"test":true},"timestamp":"date","index":100,"environment":"test"}\n'],
       [expect.stringMatching(/logs\/test.log/g), '{"level":"QUERY","title":"title","measurement":100,"timestamp":"date","index":200,"environment":"test"}\n'],
-      [expect.stringMatching(/logs\/test.log/g), '{"level":"WARNING","title":"title","measurement":"formated","timestamp":"date","index":1000,"environment":"test"}\n'],
+      [expect.stringMatching(/logs\/test.log/g), '{"level":"WARNING","title":"title","measurement":"formatted","timestamp":"date","index":1000,"environment":"test"}\n'],
       [expect.stringMatching(/logs\/test.log/g), '{"level":"ERROR","title":"title","error":{"cause":{}},"timestamp":"date","index":2000,"environment":"test"}\n'],
       [expect.stringMatching(/logs\/test.log/g), '{"level":"ERROR","title":"title","error":{"cause":{}},"timestamp":"date","index":2001,"environment":"test"}\n'],
       [expect.stringMatching(/logs\/test.log/g), '{"level":"FATAL","title":"title","timestamp":"date","index":10000,"environment":"test"}\n']
     ])
   })
 
-  it('prints the formated logs with a category', async (): Promise<void> => {
+  it('prints the formatted logs with a category', async (): Promise<void> => {
     const appendMock = jest.fn()
     const transport = new LocalFileTransport()
 
