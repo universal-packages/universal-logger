@@ -36,40 +36,7 @@ logger.publish({ level: 'INFO', title: 'We are online' })
 // > We are online
 ```
 
-### LogEntry
-
-All the information and level that an event carries to be logged.
-
-```js
-logger.publish({ ...logEntry })
-logger.publish('<level>', '<title>', 'message', { ...rest })
-```
-
-- **`level`** `'FATAL' | 'ERROR' | 'WARNING' | 'INFO' | 'QUERY' | 'DEBUG' | 'TRACE'`
-  Log level to which this log entry belongs.
-
-- **`title`** `string`
-  A quick and concise description of the event to be logged.
-
-- **`message`** `string`
-  Additional information about the event.
-
-- **`error`** `Error`
-  If this is an `ERROR` level log entry you can pass the error object here.
-
-- **`category`** `string`
-  Useful to categorize logs apart from others, will be passed to all log entries.
-
-- **`measurement`** ` number | string`
-  A number representing a measurement made for the event commonly in milliseconds or a formatted string. The user can store any number here and the transport can do anything with it.
-
-- **`metadata`** `{}`
-  Additional information related to the event, an object with related data.
-
-- **`tags`** `string[]`
-  Additional information related to the event, an array of tags to classify even further this event.
-
-## Options
+### Options
 
 - **`level`** `LogLevel | LogLevel[]`
   If you specify a level here the logger will only publish log entries with the same level of importance and below, or you can specify an array of levels and only publish log entries in those levels.
@@ -97,6 +64,54 @@ logger.publish('<level>', '<title>', 'message', { ...rest })
 - **`filterMetadataKeys`** `String[]` `default: ['secret', 'password', 'token']`
   Before publishing metadata to transports it will filter the value of these keys in the metadata object to `<filtered>`
 
+### Instance methods
+
+##### **`publish(entry: LogEntry)`**
+
+##### **`publish(level: LogLevel, [title: string, message: string, category: string, restOfEntry])`**
+
+Publish a new log entry.
+
+#### **`addTransport(name:string, transport: Transport)`**
+
+Adds a new transport to also be considered when publishing an entry.
+
+#### **`getTransport(name:string)`**
+
+Gets a named transport so we can manipulate its behavior
+
+#### **`removeTransport(name:string)`**
+
+Removes a transport to avoid publish to it.
+
+## LogEntry
+
+All the information and level that an event carries to be logged.
+
+- **`level`** `'FATAL' | 'ERROR' | 'WARNING' | 'INFO' | 'QUERY' | 'DEBUG' | 'TRACE'`
+  Log level to which this log entry belongs.
+
+- **`title`** `string`
+  A quick and concise description of the event to be logged.
+
+- **`message`** `string`
+  Additional information about the event.
+
+- **`error`** `Error`
+  If this is an `ERROR` level log entry you can pass the error object here.
+
+- **`category`** `string`
+  Useful to categorize logs apart from others, will be passed to all log entries.
+
+- **`measurement`** ` number | string`
+  A number representing a measurement made for the event commonly in milliseconds or a formatted string. The user can store any number here and the transport can do anything with it.
+
+- **`metadata`** `{}`
+  Additional information related to the event, an object with related data.
+
+- **`tags`** `string[]`
+  Additional information related to the event, an array of tags to classify even further this event.
+
 ## Custom transports
 
 A transport is no more than an object that implements a `log` function that takes a single `TransportLogEntry` as argument
@@ -113,32 +128,6 @@ An object containing all the log entry information to be transported to your fan
 
 - **`index`** `number`
   The number of log entries that have been published since the logger started publishing.
-
-### addTransport()
-
-Adds a new transport to also be considered when publishing an entry.
-
-```js
-logger.addTransport('new-transport', transport)
-```
-
-### getTransport()
-
-Gets a named transport so we can manipulate its behavior
-
-```js
-const trasnport = logger.getTransport('terminal')
-
-transport.setCategoryColor('SQL', 'YELLOW')
-```
-
-### removeTransport()
-
-Removes a transport to avoid publish to it.
-
-```js
-logger.removeTransport('transport')
-```
 
 ### TransportInterface
 
@@ -173,7 +162,7 @@ logger.publish({ level: 'INFO', title: 'We are online' })
 // > We are online
 ```
 
-## Options
+### Options
 
 - **`clear`** `boolean`
   If true the terminal screen will be cleared before the first log entry is printed.
@@ -199,7 +188,7 @@ logger.publish({ level: 'INFO', title: 'We are online' })
 // > We are online
 ```
 
-## Options
+### Options
 
 - **`asJson`** `boolean`
   If true lines in the file will only be the serialized [TransportLogEntry](#transportlogentry).
