@@ -36,8 +36,6 @@ describe('Logger', (): void => {
 
     await logger.await()
 
-    // console.error(testTransport.log.mock.calls[0][0].metadata)
-
     expect(testTransport.log.mock.calls[0][0].metadata).toEqual({
       secret: '<filtered>',
       password: '<filtered>',
@@ -223,5 +221,9 @@ describe('Logger', (): void => {
     logger.removeTransport('testTransport')
 
     expect(logger.getTransport('testTransport')).toEqual(undefined)
+  })
+
+  it('works with not provided options', async (): Promise<void> => {
+    new Logger()
   })
 })

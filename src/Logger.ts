@@ -34,7 +34,7 @@ export default class Logger {
       silence: false,
       transports: { terminal: new TerminalTransport(), localFile: new LocalFileTransport() },
       ...options,
-      filterMetadataKeys: ['password', 'secret', 'token', ...(options.filterMetadataKeys || [])]
+      filterMetadataKeys: ['password', 'secret', 'token', ...(options?.filterMetadataKeys || [])]
         .filter((value: string, index: number, self: string[]): boolean => self.indexOf(value) === index)
         .map((value: string): string => value.toLowerCase())
     }
