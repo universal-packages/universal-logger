@@ -1,8 +1,9 @@
 import { BufferDispatcher } from '@universal-packages/buffer-dispatcher'
 import { mapObject } from '@universal-packages/object-mapper'
+
 import { TerminalTransport } from '.'
 import LocalFileTransport from './LocalFileTransport'
-import { LogEntry, LoggerOptions, TransportInterface, TransportLogEntry, LogLevel, PartialLogEntry, NamedTransports } from './Logger.types'
+import { LogEntry, LogLevel, LoggerOptions, NamedTransports, PartialLogEntry, TransportInterface, TransportLogEntry } from './Logger.types'
 
 /**
  *

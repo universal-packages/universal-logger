@@ -1,9 +1,10 @@
-import path from 'path'
+import { ensureDirectory, ensureFile } from '@universal-packages/fs-utils'
 import fs from 'fs'
+import path from 'path'
 import util from 'util'
-import { ensureFile, ensureDirectory } from '@universal-packages/fs-utils'
+
 import { LocalFileTransportOptions } from './LocalFileTransport.types'
-import { TransportLogEntry, TransportInterface } from './Logger.types'
+import { TransportInterface, TransportLogEntry } from './Logger.types'
 
 /** This transport will append all log entries into a local log file */
 export default class LocalFileTransport implements TransportInterface {

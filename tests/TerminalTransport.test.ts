@@ -1,4 +1,5 @@
 import stripAnsi from 'strip-ansi'
+
 import { CategoryColor, TerminalTransport } from '../src'
 
 beforeAll((): void => {

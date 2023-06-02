@@ -1,4 +1,4 @@
-import { Logger, LogLevel } from '../src'
+import { LogLevel, Logger } from '../src'
 
 jest.spyOn(console, 'log').mockImplementation(jest.fn())
 jest.spyOn(console, 'warn').mockImplementation(jest.fn())

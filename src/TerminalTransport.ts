@@ -1,9 +1,10 @@
-import chalk from 'chalk'
-import util from 'util'
 import ansiEscapes from 'ansi-escapes'
+import chalk from 'chalk'
 import stripAnsi from 'strip-ansi'
-import { TransportLogEntry, LogLevel, TransportInterface } from './Logger.types'
-import { TerminalTransportOptions, CategoryColor } from './TerminalTransport.types'
+import util from 'util'
+
+import { LogLevel, TransportInterface, TransportLogEntry } from './Logger.types'
+import { CategoryColor, TerminalTransportOptions } from './TerminalTransport.types'
 
 /**
  *
