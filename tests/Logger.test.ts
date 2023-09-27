@@ -7,7 +7,7 @@ beforeEach((): void => {
   jest.clearAllMocks()
 })
 
-describe('Logger', (): void => {
+describe(Logger, (): void => {
   it('will publish a log entry to all configured transports transports', async (): Promise<void> => {
     const testTransport = { enabled: true, log: jest.fn() }
     let logger = new Logger({ transports: { testTransport } })

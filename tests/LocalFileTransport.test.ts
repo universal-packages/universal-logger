@@ -8,7 +8,7 @@ beforeAll((): void => {
   process.stdout.columns = 60
 })
 
-describe('LocalFileTransport', (): void => {
+describe(LocalFileTransport, (): void => {
   it('appends the logs in the file', async (): Promise<void> => {
     const appendMock = jest.fn()
     const transport = new LocalFileTransport()

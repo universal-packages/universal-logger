@@ -7,7 +7,7 @@ beforeAll((): void => {
   process.stdout.columns = 60
 })
 
-describe('TerminalTransport', (): void => {
+describe(TerminalTransport, (): void => {
   it('clears the terminal af first log', async (): Promise<void> => {
     const writeMock = jest.fn()
     const transport = new TerminalTransport({ clear: true, withHeader: true })
