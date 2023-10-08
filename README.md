@@ -103,8 +103,8 @@ All the information and level that an event carries to be logged.
 - **`category`** `string`
   Useful to categorize logs apart from others, will be passed to all log entries.
 
-- **`measurement`** ` number | string`
-  A number representing a measurement made for the event commonly in milliseconds or a formatted string. The user can store any number here and the transport can do anything with it.
+- **`measurement`** ` number | string | Measurement`
+  A number representing a measurement made for the event commonly in milliseconds,formatted string or a [Measurement](https://github.com/universal-packages/universal-time-measurer#measurement) object.
 
 - **`metadata`** `{}`
   Additional information related to the event, an object with related data.

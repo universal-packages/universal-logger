@@ -35,7 +35,7 @@ export default class TerminalTransport implements TransportInterface {
       const tagsFormat = chalk.bgRgb(30, 30, 30).bold.rgb(240, 240, 240)
       const categoryTag = logEntry.category ? ` ${this.getCategoryColor(this.options.categoryColors[logEntry.category])(` ${logEntry.category} `)}` : ''
       const environmentTag = ` ${tagsFormat(` ${logEntry.environment} `)}`
-      const measurementTag = logEntry.measurement ? ` ${tagsFormat(` ${logEntry.measurement} `)}` : ''
+      const measurementTag = logEntry.measurement ? ` ${tagsFormat(` ${logEntry.measurement.toString()} `)}` : ''
       const timestampTag = ` ${tagsFormat(` ${logEntry.timestamp.toLocaleTimeString()} `)}`
 
       toAppend = `${this.getLevelBackgroundChalk(logEntry.level)(

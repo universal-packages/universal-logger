@@ -26,7 +26,7 @@ export default class LocalFileTransport implements TransportInterface {
       fs.appendFileSync(location, `${JSON.stringify(logEntry)}\n`)
     } else {
       const categoryTag = logEntry.category ? `${` | ${logEntry.category}`}` : ''
-      const measurementTag = logEntry.measurement ? ` | ${logEntry.measurement}` : ''
+      const measurementTag = logEntry.measurement ? ` | ${logEntry.measurement.toString()}` : ''
       const timestamTag = ` | ${logEntry.timestamp.toLocaleTimeString()} `
 
       let toAppend = `${this.pad(logEntry.index)} | ${logEntry.level}${categoryTag}${measurementTag}${timestamTag}\n`

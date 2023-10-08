@@ -1,3 +1,5 @@
+import { Measurement } from '@universal-packages/time-measurer'
+
 export type LogLevel = 'FATAL' | 'ERROR' | 'WARNING' | 'QUERY' | 'INFO' | 'DEBUG' | 'TRACE'
 
 export interface NamedTransports {
@@ -12,7 +14,7 @@ export interface LoggerOptions {
 
 export interface PartialLogEntry {
   error?: Error
-  measurement?: number | string
+  measurement?: number | string | Measurement
   metadata?: Record<string, any>
   tags?: string[]
 }

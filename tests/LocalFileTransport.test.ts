@@ -1,3 +1,4 @@
+import { Measurement } from '@universal-packages/time-measurer'
 import fs from 'fs'
 
 import { LocalFileTransport } from '../src'
@@ -28,7 +29,7 @@ describe(LocalFileTransport, (): void => {
 
     transport.log({ level: 'TRACE', metadata, title: 'title', timestamp: new Date(), index: 1, environment: 'test' })
     transport.log({ level: 'DEBUG', metadata: largeMetadata, title: 'title', message: 'with message', timestamp: new Date(), index: 10, environment: 'test' })
-    transport.log({ level: 'INFO', title: 'title', metadata: { test: true }, timestamp: new Date(), index: 100, environment: 'test' })
+    transport.log({ level: 'INFO', title: 'title', measurement: new Measurement(12340000n), metadata: { test: true }, timestamp: new Date(), index: 100, environment: 'test' })
     transport.log({ level: 'QUERY', title: 'title', measurement: 100, timestamp: new Date(), index: 200, environment: 'test' })
     transport.log({ level: 'WARNING', title: 'title', measurement: 'formated', timestamp: new Date(), index: 1000, environment: 'test' })
     transport.log({ level: 'ERROR', title: 'title', error, timestamp: new Date(), index: 2000, environment: 'test' })
@@ -46,7 +47,7 @@ describe(LocalFileTransport, (): void => {
       ],
       [
         expect.stringMatching(/logs\/test.log/g),
-        '100 | INFO | date \ntitle\n⚑ { test: true }}\n---------------------------------------------------------------------------------------------------\n'
+        '100 | INFO | 12.34ms | date \ntitle\n⚑ { test: true }}\n---------------------------------------------------------------------------------------------------\n'
       ],
       [
         expect.stringMatching(/logs\/test.log/g),

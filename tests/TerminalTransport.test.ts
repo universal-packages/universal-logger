@@ -1,3 +1,4 @@
+import { Measurement } from '@universal-packages/time-measurer'
 import stripAnsi from 'strip-ansi'
 
 import { CategoryColor, TerminalTransport } from '../src'
@@ -46,7 +47,7 @@ describe(TerminalTransport, (): void => {
 
     transport.log({ level: 'TRACE', metadata, title: 'title', timestamp: new Date(), index: 1, environment: 'test' })
     transport.log({ level: 'DEBUG', metadata: largeMetadata, title: 'title', message: 'with message', timestamp: new Date(), index: 10, environment: 'test' })
-    transport.log({ level: 'INFO', title: 'title', metadata: { test: true }, timestamp: new Date(), index: 100, environment: 'test' })
+    transport.log({ level: 'INFO', title: 'title', measurement: new Measurement(12340000n), metadata: { test: true }, timestamp: new Date(), index: 100, environment: 'test' })
     transport.log({ level: 'QUERY', title: 'title', measurement: 100, timestamp: new Date(), index: 200, environment: 'test' })
     transport.log({ level: 'WARNING', title: 'title', measurement: 'formated', timestamp: new Date(), index: 1000, environment: 'test' })
     transport.log({ level: 'ERROR', title: 'title', error, timestamp: new Date(), index: 2000, environment: 'test' })
@@ -60,7 +61,7 @@ describe(TerminalTransport, (): void => {
         ' 010 DEBUG   test   date \ntitle\nwith message\n⚑ {\n  this: {\n    is: {\n      meta: {\n        this: {\n          is: {\n            meta: [Object]\n          }\n        }\n      }\n    }\n  }\n}\n'
       ],
       ['\n'],
-      [' 100 INFO   test   date \ntitle\n⚑ { test: true }\n'],
+      [' 100 INFO   test   12.34ms   date \ntitle\n⚑ { test: true }\n'],
       ['\n'],
       [' 200 QUERY   test   100   date \ntitle\n'],
       ['\n'],
