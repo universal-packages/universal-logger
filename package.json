@@ -16,7 +16,7 @@
     "update-dependents": "umaintenance update-dependents"
   },
   "dependencies": {
-    "@universal-packages/buffer-dispatcher": "1.1.1",
+    "@universal-packages/buffer-dispatcher": "^1.2.0",
     "@universal-packages/fs-utils": "1.0.1",
     "@universal-packages/object-mapper": "1.1.1",
     "@universal-packages/time-measurer": "^1.4.9",
