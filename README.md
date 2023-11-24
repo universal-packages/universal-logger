@@ -84,6 +84,12 @@ Gets a named transport so we can manipulate its behavior
 
 Removes a transport to avoid publish to it.
 
+### Getter
+
+#### **`await`**
+
+Returns a promise that resolves when all the transports have finished publishing the log entry.
+
 ## LogEntry
 
 All the information and level that an event carries to be logged.
@@ -134,7 +140,7 @@ An object containing all the log entry information to be transported to your fan
 For typescript users this is the interface a Transport implements, to ensure the log method is implemented.
 
 ```typescript
-import { TransportInterface, LogEntry } from '../logger'
+import { LogEntry, TransportInterface } from '../logger'
 
 export default class CustomTransport implements TransportInterface {
   public enabled = true // Required, use it to enable or disable logging by transport
@@ -175,7 +181,7 @@ logger.publish({ level: 'INFO', title: 'We are online' })
 This logger provided file appending transport, the usual `logs/environment.log` with all logs in it, the environment file name selected from the [TransportLogEntry](#transportlogentry).
 
 ```js
-import { Logger, LocalFileTransport } from '@universal-packages/logger'
+import { LocalFileTransport, Logger } from '@universal-packages/logger'
 
 const transport = new LocalFileTransport()
 const logger = new Logger({ transport })

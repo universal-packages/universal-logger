@@ -21,6 +21,10 @@ export default class Logger {
   public silence: boolean
   public level: LogLevel | LogLevel[]
 
+  public get await(): Promise<void> {
+    return this.bufferDispatcher.await
+  }
+
   private readonly options: LoggerOptions
   private readonly bufferDispatcher: BufferDispatcher<TransportLogEntry>
   private readonly transports: NamedTransports
@@ -45,7 +49,7 @@ export default class Logger {
     this.transports = this.options.transports
     this.transportKeys = Object.keys(this.transports)
 
-    this.bufferDispatcher = new BufferDispatcher<TransportLogEntry>(this.processEntry.bind(this))
+    this.bufferDispatcher = new BufferDispatcher<TransportLogEntry>({ entryDispatcher: this.processEntry.bind(this) })
   }
 
   /** Appends a new transport to the transports map */
@@ -67,11 +71,6 @@ export default class Logger {
     this.transportKeys = Object.keys(this.transports)
   }
 
-  /** Returns the buffer dispatcher promise so you can await until all logs have been processed */
-  public async await(): Promise<void> {
-    return this.bufferDispatcher.await()
-  }
-
   /** Sends a new log entry to the transports. */
   public publish(entry: LogEntry): void
   public publish(level: LogLevel, title?: string, message?: string, category?: string, restOfEntry?: PartialLogEntry): void
@@ -90,7 +89,7 @@ export default class Logger {
         this.filterMetadata(transportLogEntry.metadata)
       }
 
-      this.bufferDispatcher.append(transportLogEntry)
+      this.bufferDispatcher.push(transportLogEntry)
     }
   }
 
