@@ -83,6 +83,8 @@ export default class TerminalTransport implements TransportInterface {
         return chalk.bgRgb(0, 150, 0).bold.rgb(200, 240, 200)
       case 'KIWI':
         return chalk.bgRgb(20, 220, 20).bold.rgb(200, 240, 200)
+      case 'ORANGE':
+        chalk.bgRgb(230, 100, 0).bold.rgb(240, 200, 255)
       case 'GRAY':
       default:
         return chalk.bgRgb(240, 240, 240).bold.rgb(40, 40, 40)

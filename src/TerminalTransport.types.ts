@@ -1,4 +1,4 @@
-export type CategoryColor = 'BLACK' | 'RED' | 'YELLOW' | 'PURPLE' | 'BLUE' | 'GRAY' | 'DARK' | 'GREEN' | 'AQUA' | 'KIWI'
+export type CategoryColor = 'BLACK' | 'RED' | 'YELLOW' | 'PURPLE' | 'BLUE' | 'GRAY' | 'DARK' | 'GREEN' | 'AQUA' | 'KIWI' | 'ORANGE'
 
 export interface NamedCategoryColors {
   [category: string]: CategoryColor
