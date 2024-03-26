@@ -2,28 +2,27 @@ import { Measurement } from '@universal-packages/time-measurer'
 
 export type LogLevel = 'FATAL' | 'ERROR' | 'WARNING' | 'QUERY' | 'INFO' | 'DEBUG' | 'TRACE'
 
-export interface NamedTransports {
-  [name: string]: TransportInterface
-}
 export interface LoggerOptions {
   level?: LogLevel | LogLevel[]
   silence?: boolean
-  transports?: NamedTransports
+  transports?: (string | TransportEntry)[]
   filterMetadataKeys?: string[]
 }
 
-export interface PartialLogEntry {
+export interface LogEntry {
+  category?: string
   error?: Error
+  level: LogLevel
+  title?: string
   measurement?: number | string | Measurement
+  message?: string
   metadata?: Record<string, any>
   tags?: string[]
 }
 
-export interface LogEntry extends PartialLogEntry {
-  category?: string
-  level: LogLevel
-  title?: string
-  message?: string
+export interface LogBufferEntry {
+  entry: TransportLogEntry
+  configuration?: Record<string, any>
 }
 
 export interface TransportLogEntry extends LogEntry {
@@ -32,7 +31,17 @@ export interface TransportLogEntry extends LogEntry {
   index: number
 }
 
+export interface TransportEntry {
+  transport: string | TransportInterface
+  transportOptions?: any
+}
+
 export interface TransportInterface {
-  enabled: boolean
-  log(LogEntry: TransportLogEntry): void | Promise<void>
+  prepare?: () => void | Promise<void>
+  release?: () => void | Promise<void>
+  log(LogEntry: TransportLogEntry, configuration?: Record<string, any>): void | Promise<void>
+}
+
+export interface TransportInterfaceClass {
+  new (options?: Record<string, any>): TransportInterface
 }

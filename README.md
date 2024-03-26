@@ -27,10 +27,9 @@ By default a logger transports are a `TerminalTransport` and a `LocalFileTranspo
 ```js
 import { Logger } from '@universal-packages/logger'
 
-const logger = new Logger()
+const logger = new Logger({ transports: ['terminal', 'local-file'] })
 
-logger.publish('INFO', 'We are online')
-logger.publish({ level: 'INFO', title: 'We are online' })
+logger.log({ level: 'INFO', title: 'We are online' })
 
 // > 001 INFO 7:43:05 PM
 // > We are online
@@ -39,7 +38,7 @@ logger.publish({ level: 'INFO', title: 'We are online' })
 ### Options
 
 - **`level`** `LogLevel | LogLevel[]`
-  If you specify a level here the logger will only publish log entries with the same level of importance and below, or you can specify an array of levels and only publish log entries in those levels.
+  If you specify a level here the logger will only log entries with the same level of importance and below, or you can specify an array of levels, it will only log entries in those levels.
 
   The level of importance if the following, with 0 for the most important
 
@@ -51,46 +50,32 @@ logger.publish({ level: 'INFO', title: 'We are online' })
   5. `DEBUG`
   6. `TRACE`
 
-  For example if you specify `WARNING` as level the logger will only publish log entries with level `WARNING`, `ERROR` and `FATAL`
+  For example if you specify `WARNING` as level the logger will only log entries with level `WARNING`, `ERROR` and `FATAL`
 
-  You can also specify an array of levels in case you want an arbitrary group of log entries to be logged, for example if you specify `['INFO', 'QUERY']`, only those kind of log entries will be published.
+  You can also specify an array of levels in case you want an arbitrary group of log entries to be logged, for example if you specify `['INFO', 'QUERY']`, only those kind of log entries will be processed.
 
 - **`silence`** `boolean`
-  Set this as true if you want the logger to not publish any log entry form the beginning.
+  Set this as true if you want the logger to not process any log entries.
 
-- **`transport`** `TransportInterface | TransportInterface[]`
-  Transport or group of transports to publish to.
+- **`transports`** `(string | Object)[]`
+  List of transports to pass entries to, a selection of all available transports than can be loaded.
+
+  ```js
+  import { LocalFileTransport, TerminalTransport } from '@universal-packages/logger'
+
+  const logger = new Logger({ transports: [{ transport: 'terminal', transportOptions: { clear: true } }] })
+  ```
 
 - **`filterMetadataKeys`** `String[]` `default: ['secret', 'password', 'token']`
-  Before publishing metadata to transports it will filter the value of these keys in the metadata object to `<filtered>`
+  Before passing metadata to transports it will filter the value of these keys in the metadata object to `<filtered>`
 
 ### Instance methods
 
-##### **`publish(entry: LogEntry)`**
+##### **`log(entry: Object, [configuration: Object])`**
 
-##### **`publish(level: LogLevel, [title: string, message: string, category: string, restOfEntry])`**
+Passes a log entry to the transports to be processed.
 
-Publish a new log entry.
-
-#### **`addTransport(name:string, transport: Transport)`**
-
-Adds a new transport to also be considered when publishing an entry.
-
-#### **`getTransport(name:string)`**
-
-Gets a named transport so we can manipulate its behavior
-
-#### **`removeTransport(name:string)`**
-
-Removes a transport to avoid publish to it.
-
-### Getter
-
-#### **`await`**
-
-Returns a promise that resolves when all the transports have finished publishing the log entry.
-
-## LogEntry
+##### entry
 
 All the information and level that an event carries to be logged.
 
@@ -118,37 +103,73 @@ All the information and level that an event carries to be logged.
 - **`tags`** `string[]`
   Additional information related to the event, an array of tags to classify even further this event.
 
-## Custom transports
+##### configuration
 
-A transport is no more than an object that implements a `log` function that takes a single `TransportLogEntry` as argument
+Any additional configuration to be passed to the transports about the log entry. For example to tell the Terminal transport to use a category color.
+
+```js
+logger.log({ level: 'INFO', title: 'We are online', category: 'SOCKET' }, { categoryColor: 'GREEN' })
+```
+
+### Getters
+
+#### **`await`**
+
+Returns a promise that resolves when all the transports have finished processing the log entry.
+
+## Transport
+
+To create a transport that suits your requirements you just need to implement new classes and use them as the following:
+
+```js
+import MyTransport from './MyTransport'
+
+const logger = new Logger({ transports: [{ transport: new MyTransport() }] })
+```
+
+The log method of the transport will be called with `TransportLogEntry` object.
+
+```js
+export default class MyTransport {
+  constructor(options) {
+    // Options passed through the adapters sub system
+  }
+
+  prepare() {
+    // Initialize any connection using options
+  }
+
+  release() {
+    // Release any resources or close any connection
+  }
+
+  log(entry, configuration) {
+    // Process the log entry
+  }
+}
+```
 
 ### TransportLogEntry
 
-An object containing all the log entry information to be transported to your fancy log system, extending from [LogEntry](#logentry)
+An object containing all the log entry information to be transported to your fancy log system, extending from [LogEntry](#entry)
 
 - **`environment`** `Date`
   Teh environment the app is running `NODE_ENV`
 
 - **`timestamp`** `Date`
-  A date representing the moment a log entry is published.
+  A date representing the moment a log entry is logged.
 
 - **`index`** `number`
-  The number of log entries that have been published since the logger started publishing.
+  The number of log entries that have been logged since the logger started logging.
 
 ### TransportInterface
 
-For typescript users this is the interface a Transport implements, to ensure the log method is implemented.
+If you are using TypeScript just implement the `TransportInterface` in your class to ensure the right implementation.
 
-```typescript
-import { LogEntry, TransportInterface } from '../logger'
+```ts
+import { TransportInterface } from '@universal-packages/logger'
 
-export default class CustomTransport implements TransportInterface {
-  public enabled = true // Required, use it to enable or disable logging by transport
-  public log(entry: TransportLogEntry): void {
-    if (!this.enabled) return
-    console.log(JSON.stringify(entry))
-  }
-}
+export default class MyEngine implements TransportInterface {}
 ```
 
 ## TerminalTransport
@@ -161,8 +182,7 @@ import { Logger, TerminalTransport } from '@universal-packages/logger'
 const transport = new TerminalTransport()
 const logger = new Logger({ transports: { terminal: transport } })
 
-logger.publish('INFO', 'We are online')
-logger.publish({ level: 'INFO', title: 'We are online' })
+logger.log({ level: 'INFO', title: 'We are online' })
 
 // > 001 INFO 7:43:05 PM
 // > We are online
@@ -186,8 +206,7 @@ import { LocalFileTransport, Logger } from '@universal-packages/logger'
 const transport = new LocalFileTransport()
 const logger = new Logger({ transport })
 
-logger.publish('INFO', 'We are online')
-logger.publish({ level: 'INFO', title: 'We are online' })
+logger.log({ level: 'INFO', title: 'We are online' })
 
 // *** In file logs/environment.log
 // > 001 INFO 7:43:05 PM

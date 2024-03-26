@@ -1,4 +1,5 @@
-import { LogLevel, Logger } from '../src'
+import { LocalFileTransport, LogLevel, Logger, TerminalTransport } from '../src'
+import TestTransport from '../src/TestTransport'
 
 jest.spyOn(console, 'log').mockImplementation(jest.fn())
 jest.spyOn(console, 'warn').mockImplementation(jest.fn())
@@ -8,29 +9,51 @@ beforeEach((): void => {
 })
 
 describe(Logger, (): void => {
-  it('will publish a log entry to all configured transports transports', async (): Promise<void> => {
-    const testTransport = { enabled: true, log: jest.fn() }
-    let logger = new Logger({ transports: { testTransport } })
+  it('will log a log entry to all configured transports transports', async (): Promise<void> => {
+    let logger = new Logger()
+    await logger.prepare()
 
-    logger.publish('INFO', 'This is a title')
-    expect(testTransport.log).toHaveBeenCalledTimes(1)
+    logger.log({ level: 'INFO', title: 'This is a title' })
+    expect(TestTransport.logHistory).toEqual([
+      {
+        environment: 'test',
+        index: 1,
+        level: 'INFO',
+        timestamp: expect.any(Date),
+        title: 'This is a title'
+      }
+    ])
+    TestTransport.reset()
 
-    const testTransport2 = { enabled: true, log: jest.fn() }
+    const testTransport2 = { log: jest.fn() }
 
-    logger = new Logger({ transports: { testTransport, testTransport2 } })
-    logger.publish({ level: 'INFO', title: 'This is a title' })
+    logger = new Logger({ transports: [{ transport: 'test' }, { transport: testTransport2 }] })
+    await logger.prepare()
+
+    logger.log({ level: 'INFO', title: 'This is a second title' })
 
     await logger.await
 
-    expect(testTransport.log).toHaveBeenCalledTimes(2)
+    expect(TestTransport.logHistory).toEqual([
+      {
+        environment: 'test',
+        index: 1,
+        level: 'INFO',
+        timestamp: expect.any(Date),
+        title: 'This is a second title'
+      }
+    ])
     expect(testTransport2.log).toHaveBeenCalledTimes(1)
   })
 
   it('filters metadata keys if they are configured as sensitive', async (): Promise<void> => {
-    const testTransport = { enabled: true, log: jest.fn() }
-    let logger = new Logger({ transports: { testTransport }, filterMetadataKeys: ['keyboard'] })
+    const testTransport = { log: jest.fn() }
+    let logger = new Logger({ transports: [{ transport: testTransport }], filterMetadataKeys: ['keyboard'] })
+    await logger.prepare()
 
-    logger.publish('INFO', 'This is a title', null, null, {
+    logger.log({
+      level: 'INFO',
+      title: 'This is a title',
       metadata: { secret: 'my secret', password: 'my password', token: 'my token', keyboard: 'my keyboard', other: 'other' }
     })
 
@@ -45,26 +68,28 @@ describe(Logger, (): void => {
     })
   })
 
-  it('will not publish if the log is silenced', async (): Promise<void> => {
-    const testTransport = { enabled: true, log: jest.fn() }
-    const logger = new Logger({ silence: true, transports: { testTransport } })
+  it('will not log if the log is silenced', async (): Promise<void> => {
+    const testTransport = { log: jest.fn() }
+    const logger = new Logger({ silence: true, transports: [{ transport: testTransport }] })
+    await logger.prepare()
 
-    logger.publish({ level: 'INFO', title: 'This is a title' })
+    logger.log({ level: 'INFO', title: 'This is a title' })
     expect(testTransport.log).toHaveBeenCalledTimes(0)
 
     logger.silence = false
 
-    logger.publish({ level: 'INFO', title: 'This is a title' })
+    logger.log({ level: 'INFO', title: 'This is a title' })
     expect(testTransport.log).toHaveBeenCalledTimes(1)
   })
 
-  it('will not publish if the log entry level is not in the importance spectrum', async (): Promise<void> => {
+  it('will not log if the log entry level is not in the importance spectrum', async (): Promise<void> => {
     const levels = ['TRACE', 'DEBUG', 'QUERY', 'INFO', 'WARNING', 'ERROR', 'FATAL']
 
     for (let i = 0; i < levels.length; i++) {
       const currentLevel = levels[i] as LogLevel
-      const testTransport = { enabled: true, log: jest.fn() }
-      const logger = new Logger({ level: 'DEBUG', transports: { testTransport } })
+      const testTransport = { log: jest.fn() }
+      const logger = new Logger({ level: 'DEBUG', transports: [{ transport: testTransport }] })
+      await logger.prepare()
 
       expect(logger.level).toEqual('DEBUG')
 
@@ -73,7 +98,7 @@ describe(Logger, (): void => {
       for (let j = 0; j < levels.length; j++) {
         const currentLogLevel = levels[j] as LogLevel
 
-        logger.publish({ level: currentLogLevel, title: 'This is a title' })
+        logger.log({ level: currentLogLevel, title: 'This is a title' }, { configured: true })
       }
 
       await logger.await
@@ -82,30 +107,37 @@ describe(Logger, (): void => {
         const currentLogLevel = levels[j] as LogLevel
 
         if (j >= i) {
-          expect(testTransport.log).toHaveBeenCalledWith({
-            level: currentLogLevel,
-            title: 'This is a title',
-            timestamp: expect.anything(),
-            index: expect.anything(),
-            environment: 'test'
-          })
+          expect(testTransport.log).toHaveBeenCalledWith(
+            {
+              level: currentLogLevel,
+              title: 'This is a title',
+              timestamp: expect.anything(),
+              index: expect.anything(),
+              environment: 'test'
+            },
+            { configured: true }
+          )
         } else {
-          expect(testTransport.log).not.toHaveBeenCalledWith({
-            level: currentLogLevel,
-            title: 'This is a title',
-            timestamp: expect.anything(),
-            index: expect.anything(),
-            environment: 'test'
-          })
+          expect(testTransport.log).not.toHaveBeenCalledWith(
+            {
+              level: currentLogLevel,
+              title: 'This is a title',
+              timestamp: expect.anything(),
+              index: expect.anything(),
+              environment: 'test'
+            },
+            { configured: true }
+          )
         }
       }
     }
   })
 
   it('console warns if no transport is there to log the entry', async (): Promise<void> => {
-    const logger = new Logger({ transports: {} })
+    const logger = new Logger({ transports: [] })
+    await logger.prepare()
 
-    logger.publish({ level: 'INFO', title: 'This is a title' })
+    logger.log({ level: 'INFO', title: 'This is a title' })
 
     await logger.await
 
@@ -119,9 +151,10 @@ describe(Logger, (): void => {
         throw 'Nop'
       }
     }
-    const logger = new Logger({ transports: { errorTransport } })
+    const logger = new Logger({ transports: [{ transport: errorTransport }] })
+    await logger.prepare()
 
-    logger.publish({ level: 'INFO', title: 'This is a title' })
+    logger.log({ level: 'INFO', title: 'This is a title' })
 
     await logger.await
 
@@ -129,22 +162,23 @@ describe(Logger, (): void => {
   })
 
   it('logs the error of another transport in all other transports if one files', async (): Promise<void> => {
-    const testTransport = { enabled: true, log: jest.fn() }
+    const testTransport = { log: jest.fn() }
     const errorTransport = {
       enabled: true,
       log: () => {
         throw 'Nop'
       }
     }
-    const logger = new Logger({ transports: { errorTransport, testTransport } })
+    const logger = new Logger({ transports: [{ transport: errorTransport }, { transport: testTransport }] })
+    await logger.prepare()
 
-    logger.publish({ level: 'INFO', title: 'This is a title' })
+    logger.log({ level: 'INFO', title: 'This is a title' })
 
     await logger.await
 
     expect(testTransport.log).toHaveBeenCalledWith({
       level: 'ERROR',
-      title: `"errorTransport" could't log because an error inside the transporter itself`,
+      title: `"Object" could't log because an error inside the transporter itself`,
       error: 'Nop',
       timestamp: expect.any(Date),
       index: 2,
@@ -153,77 +187,72 @@ describe(Logger, (): void => {
     })
   })
 
-  it('will not publish if the log entry level is not in the level group array', async (): Promise<void> => {
-    const testTransport = { enabled: true, log: jest.fn() }
-    const logger = new Logger({ level: ['INFO', 'FATAL'], transports: { testTransport } })
+  it('will not log if the log entry level is not in the level group array', async (): Promise<void> => {
+    const testTransport = { log: jest.fn() }
+    const logger = new Logger({ level: ['INFO', 'FATAL'], transports: [{ transport: testTransport }] })
+    await logger.prepare()
 
-    logger.publish({ level: 'INFO', title: 'This is a title' })
+    logger.log({ level: 'INFO', title: 'This is a title' })
     expect(testTransport.log).toHaveBeenCalledTimes(1)
 
     await logger.await
 
-    logger.publish({ level: 'FATAL', title: 'This is a title' })
+    logger.log({ level: 'FATAL', title: 'This is a title' })
     expect(testTransport.log).toHaveBeenCalledTimes(2)
 
     await logger.await
 
-    logger.publish({ level: 'WARNING', title: 'This is a title' })
+    logger.log({ level: 'WARNING', title: 'This is a title' })
     expect(testTransport.log).toHaveBeenCalledTimes(2)
   })
 
   it('will pass an environment to the transports (NODE_ENV)', async (): Promise<void> => {
-    const testTransport = { enabled: true, log: jest.fn() }
-    const logger = new Logger({ level: ['INFO', 'FATAL'], transports: { testTransport } })
+    const testTransport = { log: jest.fn() }
+    const logger = new Logger({ level: ['INFO', 'FATAL'], transports: [{ transport: testTransport }] })
+    await logger.prepare()
 
-    logger.publish({ level: 'INFO', title: 'This is a title' })
+    logger.log({ level: 'INFO', title: 'This is a title' })
     expect(testTransport.log.mock.calls[0][0]).toMatchObject({ environment: 'test' })
   })
 
-  it('can set transports on the fly', async (): Promise<void> => {
-    const testTransport = { enabled: true, log: jest.fn() }
-    const newTransport = { enabled: true, log: jest.fn() }
-    let logger = new Logger({ transports: { testTransport } })
+  it('Sets adapters from string', async (): Promise<void> => {
+    const logger = new Logger({ transports: [{ transport: 'terminal' }, { transport: 'local-file' }] })
+    await logger.prepare()
 
-    logger.addTransport('testTransport', testTransport)
-
-    await logger.await
-
-    expect(testTransport.log).toHaveBeenCalledWith({
-      environment: 'test',
-      index: 1,
-      level: 'WARNING',
-      message: undefined,
-      timestamp: expect.any(Date),
-      title: 'One "testTransport" transport was already set in transports'
-    })
-
-    logger.addTransport('newTransport', newTransport)
-
-    logger.publish({ level: 'INFO', title: 'This is a title' })
-
-    await logger.await
-
-    expect(testTransport.log).toHaveBeenCalledTimes(2)
-    expect(newTransport.log).toHaveBeenCalledTimes(1)
+    expect(logger).toMatchObject({ transports: [expect.any(TerminalTransport), expect.any(LocalFileTransport)] })
   })
 
-  it('can get transports by name', async (): Promise<void> => {
-    const testTransport = { enabled: true, log: jest.fn() }
-    let logger = new Logger({ transports: { testTransport } })
+  it('Sets adapters from objects', async (): Promise<void> => {
+    const transport = new TestTransport()
+    const logger = new Logger({ transports: [{ transport }] })
+    await logger.prepare()
 
-    expect(logger.getTransport('testTransport')).toEqual(testTransport)
+    expect(logger).toMatchObject({ transports: [transport] })
   })
 
-  it('can remove a transport', async (): Promise<void> => {
-    const testTransport = { enabled: true, log: jest.fn() }
-    let logger = new Logger({ transports: { testTransport } })
+  it('Prepares and releases adapters if they require it at load time', async (): Promise<void> => {
+    const transport = { prepare: jest.fn(), log: jest.fn(), release: jest.fn() }
+    const logger = new Logger({ transports: [{ transport }] })
+    await logger.prepare()
 
-    logger.removeTransport('testTransport')
+    expect(transport.prepare).toHaveBeenCalled()
 
-    expect(logger.getTransport('testTransport')).toEqual(undefined)
+    await logger.release()
+
+    expect(transport.release).toHaveBeenCalled()
   })
 
-  it('works with not provided options', async (): Promise<void> => {
-    new Logger()
+  it('throws if a unknown transport is specified to be loaded', async (): Promise<void> => {
+    const logger = new Logger({ transports: [{ transport: 'what?' }] })
+
+    let error: Error
+
+    try {
+      await logger.prepare()
+    } catch (e) {
+      error = e
+    }
+
+    expect(error.message).toEqual('Unknown transport: what?')
   })
 })

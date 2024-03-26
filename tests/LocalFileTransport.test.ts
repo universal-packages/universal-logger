@@ -70,11 +70,6 @@ describe(LocalFileTransport, (): void => {
         '10000 | FATAL | date \ntitle\n---------------------------------------------------------------------------------------------------\n'
       ]
     ])
-
-    transport.enabled = false
-    transport.log({ level: 'TRACE', metadata, title: 'title', timestamp: new Date(), index: 1, environment: 'test' })
-
-    expect(appendMock).toHaveBeenCalledTimes(8)
   })
 
   it('appends the logs in the file as json lines', async (): Promise<void> => {

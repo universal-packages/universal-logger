@@ -6,19 +6,15 @@ import util from 'util'
 import { LocalFileTransportOptions } from './LocalFileTransport.types'
 import { TransportInterface, TransportLogEntry } from './Logger.types'
 
-/** This transport will append all log entries into a local log file */
 export default class LocalFileTransport implements TransportInterface {
   public readonly options: LocalFileTransportOptions
-  public enabled = true
 
   public constructor(options?: LocalFileTransportOptions) {
     this.options = { location: './logs', asJson: false, ...options }
     ensureDirectory(this.options.location)
   }
 
-  /** Prints a log entry in the terminal gracefully */
   public async log(logEntry: TransportLogEntry): Promise<void> {
-    if (!this.enabled) return
     const location = path.resolve(this.options.location, `${logEntry.environment}.log`)
     ensureFile(location)
 
@@ -27,9 +23,9 @@ export default class LocalFileTransport implements TransportInterface {
     } else {
       const categoryTag = logEntry.category ? `${` | ${logEntry.category}`}` : ''
       const measurementTag = logEntry.measurement ? ` | ${logEntry.measurement.toString()}` : ''
-      const timestamTag = ` | ${logEntry.timestamp.toLocaleTimeString()} `
+      const timestampTag = ` | ${logEntry.timestamp.toLocaleTimeString()} `
 
-      let toAppend = `${this.pad(logEntry.index)} | ${logEntry.level}${categoryTag}${measurementTag}${timestamTag}\n`
+      let toAppend = `${this.pad(logEntry.index)} | ${logEntry.level}${categoryTag}${measurementTag}${timestampTag}\n`
 
       if (logEntry.title) toAppend = toAppend + `${`${logEntry.title}`}\n`
       if (logEntry.message) toAppend = toAppend + `${logEntry.message}\n`
@@ -40,7 +36,6 @@ export default class LocalFileTransport implements TransportInterface {
     }
   }
 
-  /** Quick pad number */
   private pad(number: number): string {
     if (number < 10) {
       return `00${number}`

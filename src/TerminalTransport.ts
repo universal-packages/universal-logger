@@ -4,26 +4,16 @@ import stripAnsi from 'strip-ansi'
 import util from 'util'
 
 import { LogLevel, TransportInterface, TransportLogEntry } from './Logger.types'
-import { CategoryColor, TerminalTransportOptions } from './TerminalTransport.types'
+import { CategoryColor, TerminalTransportLogConfiguration, TerminalTransportOptions } from './TerminalTransport.types'
 
-/**
- *
- * This transport will print a readable and visual log entry to the terminal using
- * `process.stdout.write`.
- *
- * By default it will clear the whole terminal screen and start logging.
- *
- */
 export default class TerminalTransport implements TransportInterface {
   public readonly options: TerminalTransportOptions
-  public enabled = true
 
   public constructor(options?: TerminalTransportOptions) {
-    this.options = { clear: false, withHeader: false, categoryColors: {}, ...options }
+    this.options = { clear: false, withHeader: false, ...options }
   }
 
-  public async log(logEntry: TransportLogEntry): Promise<void> {
-    if (!this.enabled) return
+  public async log(logEntry: TransportLogEntry, configuration?: TerminalTransportLogConfiguration): Promise<void> {
     if (this.options.clear && logEntry.index === 1) {
       process.stdout.write(ansiEscapes.clearTerminal)
       process.stdout.write(`\n`)
@@ -33,7 +23,7 @@ export default class TerminalTransport implements TransportInterface {
 
     if (this.options.withHeader) {
       const tagsFormat = chalk.bgRgb(30, 30, 30).bold.rgb(240, 240, 240)
-      const categoryTag = logEntry.category ? ` ${this.getCategoryColor(this.options.categoryColors[logEntry.category])(` ${logEntry.category} `)}` : ''
+      const categoryTag = logEntry.category ? ` ${this.getCategoryColor(configuration?.categoryColor)(` ${logEntry.category} `)}` : ''
       const environmentTag = ` ${tagsFormat(` ${logEntry.environment} `)}`
       const measurementTag = logEntry.measurement ? ` ${tagsFormat(` ${logEntry.measurement.toString()} `)}` : ''
       const timestampTag = ` ${tagsFormat(` ${logEntry.timestamp.toLocaleTimeString()} `)}`
@@ -52,7 +42,6 @@ export default class TerminalTransport implements TransportInterface {
     if (this.options.withHeader) process.stdout.write('\n')
   }
 
-  /** Quick pad number */
   private pad(number: number): string {
     if (number < 10) {
       return `00${number}`
@@ -91,7 +80,6 @@ export default class TerminalTransport implements TransportInterface {
     }
   }
 
-  /** Returns a chalk format depending of the log level */
   private getLevelBackgroundChalk(level: LogLevel): chalk.Chalk {
     switch (level) {
       case 'FATAL':
@@ -111,7 +99,6 @@ export default class TerminalTransport implements TransportInterface {
     }
   }
 
-  /** Returns a chalk format depending of the log level */
   private getLevelTextChalk(level: LogLevel): chalk.Chalk {
     switch (level) {
       case 'FATAL':

@@ -1,43 +1,33 @@
+import { gatherAdapters } from '@universal-packages/adapter-resolver'
 import { BufferDispatcher } from '@universal-packages/buffer-dispatcher'
 import { mapObject } from '@universal-packages/object-mapper'
 
-import { TerminalTransport } from '.'
 import LocalFileTransport from './LocalFileTransport'
-import { LogEntry, LogLevel, LoggerOptions, NamedTransports, PartialLogEntry, TransportInterface, TransportLogEntry } from './Logger.types'
+import { LogBufferEntry, LogEntry, LogLevel, LoggerOptions, TransportInterface, TransportInterfaceClass, TransportLogEntry } from './Logger.types'
+import TerminalTransport from './TerminalTransport'
+import TestTransport from './TestTransport'
 
-/**
- *
- * A logger object job is to be an interface for what the user wants to log and pass
- * that information through all configured transports. It will apply the following rules
- * before passing the log entry to the transports:
- *
- * 1. Checks if the logger is not silent if it is it will not do anything with the log entry
- * 2. Check if the log entry is inside the configured log level threshold
- * 3. To ensure every log is dispatched after the other we use a buffer dispatcher that
- * awaits until the transport finishes processing the log entry and then continue with the next one.
- *
- */
+const LOG_LEVELS_SCALE: { [level in LogLevel]: number } = { FATAL: 0, ERROR: 1, WARNING: 2, INFO: 3, QUERY: 4, DEBUG: 5, TRACE: 6 }
+const ON_TEST = process.env.NODE_ENV === 'test'
+
 export default class Logger {
-  public silence: boolean
+  public readonly options: LoggerOptions
   public level: LogLevel | LogLevel[]
+  public silence: boolean
 
   public get await(): Promise<void> {
     return this.bufferDispatcher.await
   }
 
-  private readonly options: LoggerOptions
-  private readonly bufferDispatcher: BufferDispatcher<TransportLogEntry>
-  private readonly transports: NamedTransports
-  private transportKeys: string[]
+  private readonly bufferDispatcher: BufferDispatcher<LogBufferEntry>
+  private readonly transports: TransportInterface[] = []
   private currentIndex = 0
-
-  private readonly LOG_LEVELS_SCALE: { [level in LogLevel]: number } = { FATAL: 0, ERROR: 1, WARNING: 2, INFO: 3, QUERY: 4, DEBUG: 5, TRACE: 6 }
 
   public constructor(options?: LoggerOptions) {
     this.options = {
       level: 'TRACE',
       silence: false,
-      transports: { terminal: new TerminalTransport(), localFile: new LocalFileTransport() },
+      transports: ON_TEST ? [{ transport: 'test' }] : [{ transport: 'terminal' }, { transport: 'local-file' }],
       ...options,
       filterMetadataKeys: ['password', 'secret', 'token', ...(options?.filterMetadataKeys || [])]
         .filter((value: string, index: number, self: string[]): boolean => self.indexOf(value) === index)
@@ -46,40 +36,26 @@ export default class Logger {
 
     this.silence = this.options.silence
     this.level = this.options.level
-    this.transports = this.options.transports
-    this.transportKeys = Object.keys(this.transports)
 
-    this.bufferDispatcher = new BufferDispatcher<TransportLogEntry>({ entryDispatcher: this.processEntry.bind(this) })
+    this.bufferDispatcher = new BufferDispatcher<LogBufferEntry>({ entryDispatcher: this.processEntry.bind(this) })
   }
 
-  /** Appends a new transport to the transports map */
-  public addTransport(name: string, transport: TransportInterface): void {
-    if (this.transports[name]) this.publish('WARNING', `One "${name}" transport was already set in transports`)
-
-    this.transports[name] = transport
-    this.transportKeys = Object.keys(this.transports)
+  public async prepare(): Promise<void> {
+    await this.loadTransports()
   }
 
-  /** Gets a named transport  */
-  public getTransport<T = TransportInterface>(name: string): T {
-    return this.transports[name] as unknown as T
+  public async release(): Promise<void> {
+    for (let i = 0; i < this.transports.length; i++) {
+      const currentTransport = this.transports[i]
+
+      if (currentTransport.release) await currentTransport.release()
+    }
   }
 
-  /** Removes a named transport  */
-  public removeTransport(name: string): void {
-    delete this.transports[name]
-    this.transportKeys = Object.keys(this.transports)
-  }
-
-  /** Sends a new log entry to the transports. */
-  public publish(entry: LogEntry): void
-  public publish(level: LogLevel, title?: string, message?: string, category?: string, restOfEntry?: PartialLogEntry): void
-  public publish(levelOrEntry: LogLevel | LogEntry, title?: string, message?: string, category?: string, restOfEntry?: PartialLogEntry): void {
-    const finalEntry: LogEntry = typeof levelOrEntry === 'string' ? { category, level: levelOrEntry, title, message, ...restOfEntry } : levelOrEntry
-
-    if (this.canBeLogged(finalEntry)) {
+  public log(entry: LogEntry, configuration?: Record<string, any>): void {
+    if (this.canBeLogged(entry)) {
       const transportLogEntry: TransportLogEntry = {
-        ...finalEntry,
+        ...entry,
         timestamp: new Date(),
         index: ++this.currentIndex,
         environment: process.env['NODE_ENV']
@@ -89,54 +65,49 @@ export default class Logger {
         this.filterMetadata(transportLogEntry.metadata)
       }
 
-      this.bufferDispatcher.push(transportLogEntry)
+      this.bufferDispatcher.push({ entry: transportLogEntry, configuration })
     }
   }
 
-  /** Called by buffer dispatcher when ready to process the next entry. */
-  private async processEntry(logEntry: TransportLogEntry): Promise<void> {
-    if (this.transportKeys.length === 0) console.warn('WARNING: no transports configured in logger')
-    const erroredTransports: { [transport: string]: Error } = {}
+  private async processEntry(logBufferEntry: LogBufferEntry): Promise<void> {
+    if (this.transports.length === 0) console.warn('WARNING: no transports configured in logger')
+    const transportErrors: { name: string; error: Error }[] = []
     let withErrors = false
+
     const successfulTransports: TransportInterface[] = []
 
-    for (let i = 0; i < this.transportKeys.length; i++) {
-      const currentTransportKey = this.transportKeys[i]
-      const currentTransport = this.transports[currentTransportKey]
+    for (let i = 0; i < this.transports.length; i++) {
+      const currentTransport = this.transports[i]
 
       try {
-        await currentTransport.log(logEntry)
+        await currentTransport.log(logBufferEntry.entry, logBufferEntry.configuration)
 
         successfulTransports.push(currentTransport)
       } catch (error) {
         withErrors = true
-        process.stdout.write(error.toString())
-        erroredTransports[currentTransportKey] = error
+
+        transportErrors.push({ name: currentTransport.constructor.name, error })
       }
     }
 
     if (withErrors) {
-      const errorKeys = Object.keys(erroredTransports)
-
       if (successfulTransports.length === 0) {
-        for (let j = 0; j < errorKeys.length; j++) {
-          const currentErrorKey = errorKeys[j]
-          const currentError = erroredTransports[currentErrorKey]
+        for (let i = 0; i < transportErrors.length; i++) {
+          const currentError = transportErrors[i]
 
-          console.log(currentError)
+          console.log(currentError.error)
         }
       } else {
         for (let i = 0; i < successfulTransports.length; i++) {
           const currentTransport = successfulTransports[i]
 
-          for (let j = 0; j < errorKeys.length; j++) {
-            const currentErrorKey = errorKeys[j]
-            const currentError = erroredTransports[currentErrorKey]
+          for (let j = 0; j < transportErrors.length; j++) {
+            const currentError = transportErrors[j]
 
             await currentTransport.log({
               level: 'ERROR',
-              title: `"${currentErrorKey}" could't log because an error inside the transporter itself`,
-              error: currentError,
+              title: `"${currentError.name}" could't log because an error inside the transporter itself`,
+              error: currentError.error,
               timestamp: new Date(),
               index: ++this.currentIndex,
               environment: process.env['NODE_ENV'],
@@ -148,13 +119,12 @@ export default class Logger {
     }
   }
 
-  /** Checks if the log entry can be logged depending on the configured level or if silenced. */
   private canBeLogged(logEntry: LogEntry): boolean {
     if (this.silence) return false
 
     if (typeof this.level === 'string') {
-      const optionsLevelScale = this.LOG_LEVELS_SCALE[this.level]
-      const entryLevelScale = this.LOG_LEVELS_SCALE[logEntry.level]
+      const optionsLevelScale = LOG_LEVELS_SCALE[this.level]
+      const entryLevelScale = LOG_LEVELS_SCALE[logEntry.level]
 
       return optionsLevelScale >= entryLevelScale
     } else {
@@ -164,8 +134,39 @@ export default class Logger {
 
   private filterMetadata(metadata: Record<string, any>): void {
     mapObject(metadata, null, (value: any, key: string): any => {
-      if (this.options.filterMetadataKeys.includes(key.toLowerCase())) return '<filtered>'
+      if (this.options.filterMetadataKeys.includes(key) || this.options.filterMetadataKeys.includes(key.toLowerCase())) return '<filtered>'
       return value
     })
+  }
+
+  private async loadTransports(): Promise<void> {
+    const knownAdapters = { terminal: TerminalTransport, 'local-file': LocalFileTransport, test: TestTransport }
+    const gatheredAdapters = gatherAdapters({ domain: 'logger', type: 'transport' })
+    const finalAdapters = { ...knownAdapters, ...gatheredAdapters }
+    const transportsKeys = Object.keys(this.options.transports)
+
+    for (let i = 0; i < transportsKeys.length; i++) {
+      const currentTransportOrTransportName = this.options.transports[i]
+      const transportNameOrTransport = typeof currentTransportOrTransportName === 'string' ? currentTransportOrTransportName : currentTransportOrTransportName.transport
+      const transportOptions = typeof currentTransportOrTransportName === 'string' ? undefined : currentTransportOrTransportName.transportOptions
+
+      if (typeof transportNameOrTransport === 'string') {
+        const GatheredAdapter: TransportInterfaceClass = finalAdapters[transportNameOrTransport]
+
+        if (GatheredAdapter) {
+          const transport = new GatheredAdapter(transportOptions)
+
+          if (transport.prepare) await transport.prepare()
+
+          this.transports.push(transport)
+        } else {
+          throw new Error(`Unknown transport: ${transportNameOrTransport}`)
+        }
+      } else {
+        if (transportNameOrTransport.prepare) await transportNameOrTransport.prepare()
+
+        this.transports.push(transportNameOrTransport)
+      }
+    }
   }
 }

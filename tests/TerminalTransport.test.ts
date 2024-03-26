@@ -74,11 +74,6 @@ describe(TerminalTransport, (): void => {
       [' 10000 FATAL   test   date \ntitle\n'],
       ['\n']
     ])
-
-    transport.enabled = false
-    transport.log({ level: 'TRACE', metadata, title: 'title', timestamp: new Date(), index: 1, environment: 'test' })
-
-    expect(writeMock).toHaveBeenCalledTimes(16)
   })
 
   it('prints the formated logs with a category', async (): Promise<void> => {
@@ -131,15 +126,17 @@ describe(TerminalTransport, (): void => {
       writeMock(stripAnsi(line))
     }) as any
 
-    const colors: CategoryColor[] = ['AQUA', 'BLACK', 'BLUE', 'DARK', 'GRAY', 'GREEN', 'KIWI', 'PURPLE', 'RED', 'YELLOW']
+    const colors: CategoryColor[] = ['AQUA', 'BLACK', 'BLUE', 'DARK', 'GRAY', 'GREEN', 'KIWI', 'PURPLE', 'RED', 'YELLOW', 'ORANGE']
 
     for (let i = 0; i < colors.length; i++) {
-      const transport = new TerminalTransport({ categoryColors: { Cat: colors[i] }, withHeader: true })
+      const transport = new TerminalTransport({ withHeader: true })
 
-      transport.log({ category: 'Cat', level: 'TRACE', title: 'title', timestamp: new Date(), index: 1, environment: 'test' })
+      transport.log({ category: 'Cat', level: 'TRACE', title: 'title', timestamp: new Date(), index: 1, environment: 'test' }, { categoryColor: colors[i] })
     }
 
     expect(writeMock.mock.calls).toEqual([
+      [' 001 TRACE   Cat   test   date \ntitle\n'],
+      ['\n'],
       [' 001 TRACE   Cat   test   date \ntitle\n'],
       ['\n'],
       [' 001 TRACE   Cat   test   date \ntitle\n'],
