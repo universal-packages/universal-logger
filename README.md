@@ -113,9 +113,9 @@ logger.log({ level: 'INFO', title: 'We are online', category: 'SOCKET' }, { cate
 
 ### Getters
 
-#### **`await`**
+#### **`dispatcher`**
 
-Returns a promise that resolves when all the transports have finished processing the log entry.
+A reference to the internal buffer dispatcher that will process the log entries.
 
 ## Transport
 

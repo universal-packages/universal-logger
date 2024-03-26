@@ -15,8 +15,8 @@ export default class Logger {
   public level: LogLevel | LogLevel[]
   public silence: boolean
 
-  public get await(): Promise<void> {
-    return this.bufferDispatcher.await
+  public get dispatcher(): BufferDispatcher<LogBufferEntry> {
+    return this.bufferDispatcher
   }
 
   private readonly bufferDispatcher: BufferDispatcher<LogBufferEntry>

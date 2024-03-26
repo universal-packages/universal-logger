@@ -32,7 +32,7 @@ describe(Logger, (): void => {
 
     logger.log({ level: 'INFO', title: 'This is a second title' })
 
-    await logger.await
+    await logger.dispatcher.waitFor('finished')
 
     expect(TestTransport.logHistory).toEqual([
       {
@@ -57,7 +57,7 @@ describe(Logger, (): void => {
       metadata: { secret: 'my secret', password: 'my password', token: 'my token', keyboard: 'my keyboard', other: 'other' }
     })
 
-    await logger.await
+    await logger.dispatcher.waitFor('finished')
 
     expect(testTransport.log.mock.calls[0][0].metadata).toEqual({
       secret: '<filtered>',
@@ -101,7 +101,7 @@ describe(Logger, (): void => {
         logger.log({ level: currentLogLevel, title: 'This is a title' }, { configured: true })
       }
 
-      await logger.await
+      await logger.dispatcher.waitFor('finished')
 
       for (let j = 0; j < levels.length; j++) {
         const currentLogLevel = levels[j] as LogLevel
@@ -139,7 +139,7 @@ describe(Logger, (): void => {
 
     logger.log({ level: 'INFO', title: 'This is a title' })
 
-    await logger.await
+    await logger.dispatcher.waitFor('finished')
 
     expect(console.warn).toHaveBeenCalledWith('WARNING: no transports configured in logger')
   })
@@ -156,7 +156,7 @@ describe(Logger, (): void => {
 
     logger.log({ level: 'INFO', title: 'This is a title' })
 
-    await logger.await
+    await logger.dispatcher.waitFor('finished')
 
     expect(console.log).toHaveBeenCalledWith('Nop')
   })
@@ -174,7 +174,7 @@ describe(Logger, (): void => {
 
     logger.log({ level: 'INFO', title: 'This is a title' })
 
-    await logger.await
+    await logger.dispatcher.waitFor('finished')
 
     expect(testTransport.log).toHaveBeenCalledWith({
       level: 'ERROR',
@@ -195,12 +195,12 @@ describe(Logger, (): void => {
     logger.log({ level: 'INFO', title: 'This is a title' })
     expect(testTransport.log).toHaveBeenCalledTimes(1)
 
-    await logger.await
+    await logger.dispatcher.waitFor('finished')
 
     logger.log({ level: 'FATAL', title: 'This is a title' })
     expect(testTransport.log).toHaveBeenCalledTimes(2)
 
-    await logger.await
+    await logger.dispatcher.waitFor('finished')
 
     logger.log({ level: 'WARNING', title: 'This is a title' })
     expect(testTransport.log).toHaveBeenCalledTimes(2)
