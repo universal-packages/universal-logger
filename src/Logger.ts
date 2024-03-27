@@ -70,7 +70,7 @@ export default class Logger {
   }
 
   public async waitForLoggingActivity(): Promise<void> {
-    await this.bufferDispatcher.waitFor('idle')
+    if (this.dispatcher.busy) await this.bufferDispatcher.waitFor('idle')
   }
 
   private async processEntry(logBufferEntry: LogBufferEntry): Promise<void> {
