@@ -69,6 +69,10 @@ export default class Logger {
     }
   }
 
+  public async waitForLoggingActivity(): Promise<void> {
+    await this.bufferDispatcher.waitFor('idle')
+  }
+
   private async processEntry(logBufferEntry: LogBufferEntry): Promise<void> {
     if (this.transports.length === 0) console.warn('WARNING: no transports configured in logger')
     const transportErrors: { name: string; error: Error }[] = []

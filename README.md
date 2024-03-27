@@ -75,6 +75,10 @@ logger.log({ level: 'INFO', title: 'We are online' })
 
 Passes a log entry to the transports to be processed.
 
+##### **`waitForLoggingActivity()`**
+
+Returns a promise that resolves when all log entries have been processed by the transports.
+
 ##### entry
 
 All the information and level that an event carries to be logged.
