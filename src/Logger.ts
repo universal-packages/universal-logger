@@ -144,7 +144,7 @@ export default class Logger {
   }
 
   private async loadTransports(): Promise<void> {
-    const knownAdapters = { terminal: TerminalTransport, 'local-file': LocalFileTransport, test: TestTransport }
+    const knownAdapters = { terminal: TerminalTransport, 'local-file': LocalFileTransport, test: TestTransport, ...this.options.includeTransportAdapters }
     const gatheredAdapters = gatherAdapters({ domain: 'logger', type: 'transport' })
     const finalAdapters = { ...knownAdapters, ...gatheredAdapters }
     const transportsKeys = Object.keys(this.options.transports)

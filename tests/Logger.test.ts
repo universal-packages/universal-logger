@@ -230,6 +230,17 @@ describe(Logger, (): void => {
     expect(logger).toMatchObject({ transports: [transport] })
   })
 
+  it('Sets adapters from included on options', async (): Promise<void> => {
+    const TestTransport = class TestTransport {
+      log = jest.fn()
+    }
+    const transport = new TestTransport()
+    const logger = new Logger({ includeTransportAdapters: { extra: TestTransport }, transports: ['extra'] })
+    await logger.prepare()
+
+    expect(logger).toMatchObject({ transports: [expect.any(TestTransport)] })
+  })
+
   it('Prepares and releases adapters if they require it at load time', async (): Promise<void> => {
     const transport = { prepare: jest.fn(), log: jest.fn(), release: jest.fn() }
     const logger = new Logger({ transports: [{ transport }] })

@@ -3,10 +3,11 @@ import { Measurement } from '@universal-packages/time-measurer'
 export type LogLevel = 'FATAL' | 'ERROR' | 'WARNING' | 'QUERY' | 'INFO' | 'DEBUG' | 'TRACE'
 
 export interface LoggerOptions {
+  filterMetadataKeys?: string[]
+  includeTransportAdapters?: Record<string, TransportInterfaceClass>
   level?: LogLevel | LogLevel[]
   silence?: boolean
   transports?: (string | TransportEntry)[]
-  filterMetadataKeys?: string[]
 }
 
 export interface LogEntry {

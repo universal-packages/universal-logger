@@ -66,6 +66,18 @@ logger.log({ level: 'INFO', title: 'We are online' })
   const logger = new Logger({ transports: [{ transport: 'terminal', transportOptions: { clear: true } }] })
   ```
 
+- **`includeTransportAdapters`** `object`
+  An object with the transport name as key and the adapter object class as value, this is useful to pass the adapter to the logger that can not be loaded with the adapter resolver subsystem.
+
+  ```js
+  import { MyTransport } from './MyTransport'
+
+  const logger = new Logger({
+    transports: ['my-transport'],
+    includeTransportAdapters: { 'my-transport': MyTransport }
+  })
+  ```
+
 - **`filterMetadataKeys`** `String[]` `default: ['secret', 'password', 'token']`
   Before passing metadata to transports it will filter the value of these keys in the metadata object to `<filtered>`
 
